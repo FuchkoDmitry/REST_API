@@ -56,18 +56,18 @@ class ConfirmAccountView(APIView):
             ).first()
             if token is None:
                 return JsonResponse({"error": "Вы указали некорректные данные."},
-                                status=status.HTTP_400_BAD_REQUEST)
+                                    status=status.HTTP_400_BAD_REQUEST)
             token.user.is_active = True
             token.user.save()
             account_confirmed.send(sender=self.__class__, instance=token.user)
             token.delete()
             return JsonResponse({"success": "Вы подтвердили учетную запись."},
-                            status=status.HTTP_200_OK)
+                                status=status.HTTP_200_OK)
         return JsonResponse({"error": "Необходимо указать email и токен."},
-                        status=status.HTTP_400_BAD_REQUEST)
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
-class LoginView(APIView): # переписать когда почта правильная а пароль нет
+class LoginView(APIView):
     """
     Логин пользователя в сервисе и получение
     им токена для выполнения запросов к API
