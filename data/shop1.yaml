@@ -1,7 +1,7 @@
 shop:
     name: Связной
     site: https://svyaznoy.ru
-    url: https://raw.githubusercontent.com/netology-code/pd-diplom/master/data/
+    url: https://raw.githubusercontent.com/FuchkoDmitry/REST_API/master/data/
     filename: shop1.yaml
 categories:
   - id: 224
