@@ -135,8 +135,9 @@ class ResetPasswordConfirmView(APIView):
             user.set_password(serializer.validated_data['password'])
             user.save()
             reset_password_confirmed.send(sender=self.__class__, instance=user)
-            token = Token.objects.get(user=user)
-            token.delete()
+            token = Token.objects.filter(user=user).first()
+            if token:
+                token.delete()
             return Response({'status': f'{user}, Пароль успешно обновлен'},
                             status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

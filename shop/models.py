@@ -11,6 +11,7 @@ class Shop(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Владелец"
     )
+    site = models.URLField(verbose_name="Сайт", blank=True)
     url = models.URLField(verbose_name="Ссылка(путь к файлу)", blank=True)
     filename = models.CharField(max_length=55, verbose_name="Имя файла", blank=True)
     is_open = models.BooleanField(verbose_name="Статус получения заказов", default=True)
@@ -43,7 +44,7 @@ class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="Категория")
     rrc = models.PositiveIntegerField(verbose_name="Рекомендованная розничная цена")
     shops = models.ManyToManyField(Shop, related_name="products",
-                                   through="ProductInfo", through_fields=("shop", "product"))
+                                   through="ProductInfo", through_fields=('product', 'shop'))
 
     class Meta:
         verbose_name = "Продукт"

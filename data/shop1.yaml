@@ -1,4 +1,8 @@
-shop: Связной
+shop:
+    name: Связной
+    site: https://svyaznoy.ru
+    url: https://raw.githubusercontent.com/netology-code/pd-diplom/master/data/
+    filename: shop1.yaml
 categories:
   - id: 224
     name: Смартфоны

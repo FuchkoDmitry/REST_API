@@ -92,7 +92,7 @@ class UserLoginSerializer(serializers.Serializer):
         return user
 
 
-class ResetPasswordConfirmSerializer(serializers.Serializer):
+class ResetPasswordConfirmSerializer(serializers.Serializer): # noqa
     password = serializers.CharField(max_length=128, write_only=True, required=True)
     password2 = serializers.CharField(max_length=128, write_only=True, required=True, label='Повторите пароль')
     token = serializers.CharField(write_only=True, required=True)
