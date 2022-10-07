@@ -70,6 +70,9 @@ class ProductInfo(models.Model):
         verbose_name_plural = "Информация о продуктах"
         unique_together = ("shop", "product", "article")
 
+    def __str__(self):
+        return f'{self.model}, {self.price} р., {self.quantity} шт.'
+
 
 class Parameter(models.Model):
     name = models.CharField(max_length=55, verbose_name="Параметр")
@@ -77,6 +80,9 @@ class Parameter(models.Model):
     class Meta:
         verbose_name = "Параметр"
         verbose_name_plural = "Список параметров"
+
+    def __str__(self):
+        return self.name
 
 
 class ProductParameter(models.Model):
@@ -92,6 +98,9 @@ class ProductParameter(models.Model):
         verbose_name = "Параметр"
         verbose_name_plural = "Список параметров"
         unique_together = ("product", "parameter")
+
+    def __str__(self):
+        return f'{self.product}, {self.parameter}, {self.value}'
 
 
 class Order(models.Model):

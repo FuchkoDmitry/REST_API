@@ -1,13 +1,9 @@
-# from pprint import pprint
 
-# from django.core.validators import URLValidator
-from django.forms import model_to_dict
 from requests import get
 from requests.exceptions import ConnectionError
 import yaml
 from yaml.scanner import ScannerError
 from rest_framework import status
-# from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -25,7 +21,8 @@ class ImportProductsView(APIView):
     Класс для импорта товаров магазином.
     В post-запросе передается url с путем к yaml-файлу.
     При следующих импортах можно передавать в url сайт магазина,
-    в таком случае путь к фалу будет прочитан из базы.
+    если параметр site передавался в yaml-файле при первом
+    импорте. В таком случае путь к фалу будет прочитан из базы.
     '''
 
     permission_classes = (IsAuthenticated, IsShop)
@@ -38,18 +35,17 @@ class ImportProductsView(APIView):
         url = serializer.validated_data.get('url')
 
         if not url.endswith('.yaml'):
-            shop = get_object_or_404(Shop, site=url)
+            shop = get_object_or_404(Shop, site=url, user=request.user)
             if shop:
                 url = shop.url + shop.filename
             else:
                 return Response({'url': 'Введите корректный url'},
                                 status=status.HTTP_400_BAD_REQUEST)
-        # try except возможно не надо
         try:
             stream = get(url).content
             data = yaml.load(stream, Loader=SafeLoader)
             shop_data = data['shop']
-        except (MaxRetryError, NewConnectionError, ConnectionError, ScannerError, KeyError):
+        except (KeyError, MaxRetryError, NewConnectionError, ConnectionError, ScannerError):
             return Response({'url': 'некорректный yaml файл'},
                             status=status.HTTP_400_BAD_REQUEST)
 
@@ -67,5 +63,20 @@ class ImportProductsView(APIView):
                                                                     name=category['name'])
                 category_object.shops.add(shop.id)
                 category_object.save()
+        ProductInfo.objects.filter(shop_id=shop.id).delete()
+        for item in data['goods']:
+            product, _ = Product.objects.get_or_create(
+                name=item['name'], category_id=item['category'], rrc=item['price_rrc']
+            )
+            product_info = ProductInfo.objects.create(
+                shop_id=shop.id, product_id=product.id, model=item['model'],
+                article=item['id'], price=item['price'], quantity=item['quantity']
+            )
+            for name, value in item['parameters'].items():
+                parameter, _ = Parameter.objects.get_or_create(name=name)
+                ProductParameter.objects.update_or_create(
+                    product_id=product_info.id, parameter_id=parameter.id,
+                    defaults={'value': value}
+                )
 
-        return Response({'status': model_to_dict(shop)}, status=status.HTTP_200_OK)
+        return Response({'status': 'Данные загружены'}, status=status.HTTP_200_OK)
