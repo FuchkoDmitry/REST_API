@@ -1,8 +1,9 @@
 shop:
     name: Связной
-    site: https://svyaznoy.ru
-    url: https://raw.githubusercontent.com/FuchkoDmitry/REST_API/master/data/
-    filename: shop1.yaml
+#    параметры site, url, filename опциональны
+#    site: https://svyaznoy.ru
+#    url: https://raw.githubusercontent.com/FuchkoDmitry/REST_API/master/data/
+#    filename: shop1.yaml
 categories:
   - id: 224
     name: Смартфоны

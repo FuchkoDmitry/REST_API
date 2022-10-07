@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-p_#z_-bwo9lk97b3r5+4&x0kz6iy*hk5mze4b-=v*0rpji%6ms'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -82,10 +82,6 @@ WSGI_APPLICATION = 'orders.wsgi.application'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.sqlite3',
-    #     'NAME': BASE_DIR / 'db.sqlite3',
-    # }
     'default': {
         'ENGINE': config('POSTGRES_ENGINE'),
         'NAME': config('POSTGRES_DB'),
@@ -141,15 +137,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.User'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-# DEFAULT_FROM_EMAIL = 'admin@shop.ru'
-EMAIL_HOST = 'smtp.mail.ru'
-EMAIL_PORT = 465
-EMAIL_HOST_USER = 'dmitrii_fuchko@mail.ru'
-# EMAIL_HOST_PASSWORD = '22Jul@2016'
-EMAIL_HOST_PASSWORD = '7bDWi55qetbfhCY0BNaw'
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_PORT = config('EMAIL_PORT', cast=int)
+EMAIL_HOST_USER = config('EMAIL')
+EMAIL_HOST_PASSWORD = config('EMAIL_PASSWORD')
 EMAIL_USE_SSL = True
-# SERVER_EMAIL = EMAIL_HOST_USER
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
