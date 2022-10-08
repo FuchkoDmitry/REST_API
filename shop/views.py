@@ -4,16 +4,17 @@ from requests.exceptions import ConnectionError
 import yaml
 from yaml.scanner import ScannerError
 from rest_framework import status
-from rest_framework.generics import get_object_or_404
+from rest_framework.generics import get_object_or_404, ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 from yaml.loader import SafeLoader
+from django_filters.rest_framework import DjangoFilterBackend
 
 from shop.models import Shop, Category, Product, ProductInfo, Parameter, ProductParameter, Order, OrderItem
 from shop.permissions import IsShop
-from shop.serializers import URLSerializer
+from shop.serializers import URLSerializer, ShopsViewSerializer, CategoriesViewSerializer, ProductsViewSerializer
 
 
 class ImportProductsView(APIView):
@@ -80,3 +81,38 @@ class ImportProductsView(APIView):
                 )
 
         return Response({'status': 'Данные загружены'}, status=status.HTTP_200_OK)
+
+
+class ShopsView(ListAPIView):
+    '''Список магазинов'''
+    serializer_class = ShopsViewSerializer
+    queryset = Shop.objects.filter(is_open=True).all()
+
+
+class CategoriesView(ListAPIView):
+    '''Список категорий'''
+    serializer_class = CategoriesViewSerializer
+    queryset = Category.objects.all()
+
+
+# class ProductsView(ListAPIView):
+#     '''
+#     Список продуктов с фильтрацией по категории и магазину
+#     '''
+#     queryset = Product.objects.all()
+#     filter_backends = [DjangoFilterBackend]
+#     filterset_fields = ['category', 'shop', 'id']
+#     serializer_class = ProductsViewSerializer
+#
+#
+# # ???
+# class ProductInfoView(RetrieveAPIView):
+#     queryset = ProductInfo.objects.all()
+#     serializer_class = ProductsViewSerializer
+
+
+class ProductsView(ListAPIView):
+    queryset = ProductInfo.objects.filter(shop__is_open=True).all()
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['product_id', 'shop_id', 'product__category']
+    serializer_class = ProductsViewSerializer
