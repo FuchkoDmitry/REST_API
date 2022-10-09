@@ -41,7 +41,7 @@ class Category(models.Model):
 
 class Product(models.Model):
     name = models.CharField(max_length=100, verbose_name="Название")
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="Категория")
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="Категория", related_name='products')
     rrc = models.PositiveIntegerField(verbose_name="Рекомендованная розничная цена")
     shops = models.ManyToManyField(Shop, related_name="products",
                                    through="ProductInfo", through_fields=('product', 'shop'))

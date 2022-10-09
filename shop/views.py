@@ -2,6 +2,7 @@
 from requests import get
 from requests.exceptions import ConnectionError
 import yaml
+from rest_framework.filters import SearchFilter
 from yaml.scanner import ScannerError
 from rest_framework import status
 from rest_framework.generics import get_object_or_404, ListAPIView, RetrieveAPIView
@@ -14,7 +15,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from shop.models import Shop, Category, Product, ProductInfo, Parameter, ProductParameter, Order, OrderItem
 from shop.permissions import IsShop
-from shop.serializers import URLSerializer, ShopsViewSerializer, CategoriesViewSerializer, ProductsViewSerializer
+from shop.serializers import URLSerializer, ShopsViewSerializer, CategoriesViewSerializer, \
+    CategoryItemsViewSerializer, ProductSerializer, ShopItemsViewSerializer, ProductInfoSerializer, \
+    ProductsViewSerializer
 
 
 class ImportProductsView(APIView):
@@ -95,24 +98,32 @@ class CategoriesView(ListAPIView):
     queryset = Category.objects.all()
 
 
-# class ProductsView(ListAPIView):
-#     '''
-#     Список продуктов с фильтрацией по категории и магазину
-#     '''
-#     queryset = Product.objects.all()
-#     filter_backends = [DjangoFilterBackend]
-#     filterset_fields = ['category', 'shop', 'id']
-#     serializer_class = ProductsViewSerializer
-#
-#
-# # ???
-# class ProductInfoView(RetrieveAPIView):
-#     queryset = ProductInfo.objects.all()
-#     serializer_class = ProductsViewSerializer
+class CategoryItemsView(RetrieveAPIView):
+    '''Все товары определенной категории'''
+    queryset = Category.objects.prefetch_related('products')
+    serializer_class = CategoryItemsViewSerializer
+
+
+class ShopItemsView(RetrieveAPIView):
+    '''Все товары определенного магазина'''
+    queryset = Shop.objects.prefetch_related('product_infos')
+    serializer_class = ShopItemsViewSerializer
+
+
+class ProductView(RetrieveAPIView):
+    '''Подробная информация о продукте'''
+    queryset = Product.objects.prefetch_related('product_infos')
+    serializer_class = ProductSerializer
 
 
 class ProductsView(ListAPIView):
-    queryset = ProductInfo.objects.filter(shop__is_open=True).all()
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['product_id', 'shop_id', 'product__category']
+    '''
+    Список всех продуктов с уточнением наличия в магазинах.
+    Возможна фильтрация по параметрам 'id', 'shops__id', 'category'
+    и поиск по параметру 'name'.
+    '''
+    queryset = Product.objects.prefetch_related('shops')
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['id', 'shops__id', 'category']
+    search_fields = ['name']
     serializer_class = ProductsViewSerializer
