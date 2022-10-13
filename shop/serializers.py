@@ -1,7 +1,11 @@
 
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
+from django.utils.translation import gettext_lazy as _
 
-from shop.models import Shop, Category, Product, ProductInfo, ProductParameter
+from shop.models import Shop, Category, Product, ProductInfo, ProductParameter, Order, OrderItem
+from users.models import UserInfo
+from users.serializers import UserContactsViewSerializer
 
 
 class URLSerializer(serializers.Serializer): # noqa
@@ -90,4 +94,92 @@ class ShopItemsViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shop
         fields = ('name', 'product_infos')
+
+
+class OrderedItemsSerializer(serializers.ModelSerializer):
+    '''Сериализатор просмотра товаров в заказе'''
+
+    product = ProductInfoSerializer()
+
+    class Meta:
+        model = OrderItem
+        fields = ('id', 'order', 'product', 'quantity')
+        extra_kwargs = {'order': {"write_only": True}}
+
+
+class BasketSerializer(serializers.ModelSerializer):
+    '''Сериализатор товаров в корзине'''
+
+    contacts = UserContactsViewSerializer(required=False, allow_null=True)
+    ordered_items = OrderedItemsSerializer(many=True, read_only=True)
+    total_price = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Order
+        fields = ('id', 'contacts', 'ordered_items', 'total_price')
+        read_only_fields = ('id',)
+
+    def create(self, validated_data):
+        items = validated_data.pop('items')
+        contacts = validated_data.pop('contacts')
+        user = validated_data['user']
+
+        if contacts:
+            UserInfo.objects.filter(user=user).update(**contacts)
+
+        basket, _ = Order.objects.get_or_create(contacts=user.contacts, **validated_data)
+
+        for item in items:
+            OrderItem.objects.update_or_create(
+                order=basket,
+                product_id=item['product'],
+                defaults={'quantity': item.get('quantity', 1)}
+            )
+        return basket
+
+    def update(self, instance, validated_data):
+        items = validated_data.pop('items')
+        contacts = validated_data.pop('contacts')
+        user = validated_data['user']
+        if contacts:
+            UserInfo.objects.filter(user=user).update(**contacts)
+        instance.ordered_items.all().delete()
+        validated_data['contacts'] = user.contacts
+        instance = super().update(instance, validated_data)
+        for item in items:
+            OrderItem.objects.create(
+                order=instance,
+                product_id=item['product'],
+                quantity=item.get('quantity', 1)
+            )
+        return instance
+
+    def validate(self, attrs):
+        attrs = self.initial_data
+        products_quantity = {
+            product: quantity for product, quantity in ProductInfo.objects.values_list('id', 'quantity')
+        }
+        items = self.initial_data['items']
+        for item in items:
+            try:
+                product_id = item['product']
+                quantity = item['quantity']
+            except KeyError:
+                raise serializers.ValidationError(
+                    {'fields': 'поля для передачи: "product", "quantity"'}
+                )
+            else:
+                if product_id not in products_quantity:
+                    raise serializers.ValidationError(
+                        {'product': f"Продукта с id {product_id} не существует"}
+                    )
+                elif quantity > products_quantity[product_id]:
+                    raise serializers.ValidationError(
+                        {'quantity': f"Товара с id {product_id} {products_quantity[product_id]}шт"}
+                    )
+                elif quantity < 0:
+                    raise serializers.ValidationError(
+                        {'quantity': 'Значение должно быть больше нуля.'}
+                    )
+        return attrs
 

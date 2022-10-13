@@ -115,9 +115,9 @@ class Order(models.Model):
     )
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Пользователь"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Пользователь", related_name='orders'
     )
-    contacts =models.ForeignKey(
+    contacts = models.ForeignKey(
         UserInfo, on_delete=models.CASCADE, verbose_name="Контакты пользователя"
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Заказ создан")

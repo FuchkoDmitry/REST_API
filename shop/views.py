@@ -1,4 +1,4 @@
-
+from django.db.models import Sum, F
 from requests import get
 from requests.exceptions import ConnectionError
 import yaml
@@ -17,7 +17,7 @@ from shop.models import Shop, Category, Product, ProductInfo, Parameter, Product
 from shop.permissions import IsShop
 from shop.serializers import URLSerializer, ShopsViewSerializer, CategoriesViewSerializer, \
     CategoryItemsViewSerializer, ProductSerializer, ShopItemsViewSerializer, ProductInfoSerializer, \
-    ProductsViewSerializer
+    ProductsViewSerializer, BasketSerializer, OrderedItemsSerializer
 
 
 class ImportProductsView(APIView):
@@ -26,7 +26,7 @@ class ImportProductsView(APIView):
     В post-запросе передается url с путем к yaml-файлу.
     При следующих импортах можно передавать в url сайт магазина,
     если параметр site передавался в yaml-файле при первом
-    импорте. В таком случае путь к фалу будет прочитан из базы.
+    импорте. В таком случае путь к файлу будет прочитан из базы.
     '''
 
     permission_classes = (IsAuthenticated, IsShop)
@@ -127,3 +127,80 @@ class ProductsView(ListAPIView):
     filterset_fields = ['id', 'shops__id', 'category']
     search_fields = ['name']
     serializer_class = ProductsViewSerializer
+
+
+class BasketView(APIView):
+    '''
+    Класс для работы с корзиной
+    '''
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        '''Просмотреть корзину'''
+
+        basket = Order.objects.filter(
+            user=self.request.user, status='basket', contacts=self.request.user.contacts).prefetch_related(
+            'ordered_items').annotate(
+            total_price=Sum(F('ordered_items__quantity') * F('ordered_items__product__price'))).first()
+        if not basket:
+            return Response({'basket': 'Ваша корзина пуста.'},
+                            status=status.HTTP_200_OK)
+        serializer = BasketSerializer(basket)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+
+        '''
+        Добавить товары в корзину, внести изменения в корзину.
+        Также можно передать контакты(они обновятся.)
+        '''
+
+        items = request.data.get('items')
+        if not items:
+            return Response({'items': 'Укажите товары для добавления'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        data = {
+            'user': request.user,
+            'contacts': request.data.get('contacts', None),
+            'items': items, 'status': 'basket'
+        }
+        serializer = BasketSerializer(data=data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+
+        return Response({"items": 'Товары добавлены в корзину'},
+                        status=status.HTTP_200_OK)
+
+    def put(self, request):
+
+        '''
+        Обновить товары в корзине.
+        Опционально можно передать контакты.
+        '''
+
+        items = request.data.get('items')
+        if not items:
+            return Response({'items': 'Укажите товары для добавления'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        basket, _ = Order.objects.get_or_create(
+            user=request.user, contacts=request.user.contacts, status='basket')
+        data = {
+            'user': request.user,
+            'contacts': request.data.get('contacts', None),
+            'items': items, 'status': 'basket'
+        }
+        serializer = BasketSerializer(data=data)
+
+        if serializer.is_valid(raise_exception=True):
+            serializer.update(basket, serializer.validated_data)
+        return Response({"items": 'Товары добавлены в корзину'},
+                        status=status.HTTP_200_OK)
+
+    def delete(self, request):
+        '''Очистить корзину'''
+        instance = Order.objects.filter(user=request.user, status='basket').first()
+        if instance:
+            instance.delete()
+        return Response({"Ваша корзина пуста."}, status=204)
