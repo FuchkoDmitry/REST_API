@@ -121,11 +121,11 @@ class BasketSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         items = validated_data.pop('items')
-        contacts = validated_data.pop('contacts')
         user = validated_data['user']
+        contacts = validated_data.pop('contacts')
 
-        if contacts:
-            UserInfo.objects.filter(user=user).update(**contacts)
+        if isinstance(contacts, dict):
+            UserInfo.objects.update_or_create(user=user, defaults=contacts)
 
         basket, _ = Order.objects.get_or_create(contacts=user.contacts, **validated_data)
 
@@ -142,7 +142,7 @@ class BasketSerializer(serializers.ModelSerializer):
         contacts = validated_data.pop('contacts')
         user = validated_data['user']
         if contacts:
-            UserInfo.objects.filter(user=user).update(**contacts)
+            UserInfo.objects.update_or_create(user=user, defaults=contacts)
         instance.ordered_items.all().delete()
         validated_data['contacts'] = user.contacts
         instance = super().update(instance, validated_data)

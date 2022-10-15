@@ -18,6 +18,7 @@ from shop.permissions import IsShop
 from shop.serializers import URLSerializer, ShopsViewSerializer, CategoriesViewSerializer, \
     CategoryItemsViewSerializer, ProductSerializer, ShopItemsViewSerializer, ProductInfoSerializer, \
     ProductsViewSerializer, BasketSerializer, OrderedItemsSerializer
+from users.models import UserInfo
 
 
 class ImportProductsView(APIView):
@@ -161,9 +162,13 @@ class BasketView(APIView):
         if not items:
             return Response({'items': 'Укажите товары для добавления'},
                             status=status.HTTP_400_BAD_REQUEST)
+        contacts = request.data.get('contacts') or UserInfo.objects.filter(user=request.user).first()
+        if contacts is None:
+            return Response({"contacts": "заполните раздел контакты или передайте их в запросе"},
+                            status=400)
         data = {
             'user': request.user,
-            'contacts': request.data.get('contacts', None),
+            'contacts': request.data.get('contacts'),
             'items': items, 'status': 'basket'
         }
         serializer = BasketSerializer(data=data)
@@ -184,6 +189,13 @@ class BasketView(APIView):
         if not items:
             return Response({'items': 'Укажите товары для добавления'},
                             status=status.HTTP_400_BAD_REQUEST)
+        contacts = request.data.get('contacts') or UserInfo.objects.filter(user=request.user).first()
+        if contacts is None:
+            return Response({"contacts": "заполните раздел контакты или передайте их в запросе"},
+                            status=400)
+        elif isinstance(contacts, dict):
+            UserInfo.objects.update_or_create(user=request.user, defaults=contacts)
+
         basket, _ = Order.objects.get_or_create(
             user=request.user, contacts=request.user.contacts, status='basket')
         data = {
@@ -204,3 +216,6 @@ class BasketView(APIView):
         if instance:
             instance.delete()
         return Response({"Ваша корзина пуста."}, status=204)
+
+
+# class ConfirmOrderView()
