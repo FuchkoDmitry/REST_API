@@ -5,6 +5,11 @@ class IsShop(permissions.BasePermission):
 
     def has_permission(self, request, view):
         user = request.user
-        if user.role == 'shop':
-            return True
-        return False
+        return user.role == 'shop'
+
+
+class IsBuyer(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        user = request.user
+        return user.role == 'buyer'

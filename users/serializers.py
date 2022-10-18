@@ -9,15 +9,10 @@ from users.models import User, ConfirmEmailToken, UserInfo
 
 
 class UserContactsViewSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.__str__')
 
     class Meta:
         model = UserInfo
-        fields = ('user', 'city', 'street', 'house', 'apartment', 'phone')
-
-    def update(self, instance, validated_data):
-        validated_data['user'] = self.context['request'].user
-        return super().update(instance, validated_data)
+        fields = ('id', 'city', 'street', 'house', 'apartment', 'phone')
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
@@ -61,13 +56,12 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         password = validated_data.pop('password')
-        contacts = validated_data.pop('contacts', None)
+        contacts = validated_data.pop('contacts', {})
 
         user = User(**validated_data)
         user.set_password(password)
         user.save()
-        if contacts:
-            UserInfo.objects.create(user=user, **contacts)
+        UserInfo.objects.create(user=user, **contacts)
         return user
 
 
@@ -125,7 +119,7 @@ class ResetPasswordConfirmSerializer(serializers.Serializer): # noqa
 
 
 class UserProfileViewSerializer(serializers.ModelSerializer):
-    contacts = UserContactsViewSerializer()
+    contacts = UserContactsViewSerializer(required=False, read_only=True, many=True)
 
     class Meta:
         model = User

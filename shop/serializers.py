@@ -110,24 +110,19 @@ class OrderedItemsSerializer(serializers.ModelSerializer):
 class BasketSerializer(serializers.ModelSerializer):
     '''Сериализатор товаров в корзине'''
 
-    contacts = UserContactsViewSerializer(required=False, allow_null=True)
+    contacts = UserContactsViewSerializer(required=False, allow_null=True, write_only=True)
     ordered_items = OrderedItemsSerializer(many=True, read_only=True)
     total_price = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Order
-        fields = ('id', 'contacts', 'ordered_items', 'total_price')
+        fields = ('id', 'status', 'contacts', 'ordered_items', 'total_price')
         read_only_fields = ('id',)
 
     def create(self, validated_data):
         items = validated_data.pop('items')
-        user = validated_data['user']
-        contacts = validated_data.pop('contacts')
 
-        if isinstance(contacts, dict):
-            UserInfo.objects.update_or_create(user=user, defaults=contacts)
-
-        basket, _ = Order.objects.get_or_create(contacts=user.contacts, **validated_data)
+        basket, _ = Order.objects.get_or_create(**validated_data)
 
         for item in items:
             OrderItem.objects.update_or_create(
@@ -138,14 +133,11 @@ class BasketSerializer(serializers.ModelSerializer):
         return basket
 
     def update(self, instance, validated_data):
+
         items = validated_data.pop('items')
-        contacts = validated_data.pop('contacts')
-        user = validated_data['user']
-        if contacts:
-            UserInfo.objects.update_or_create(user=user, defaults=contacts)
         instance.ordered_items.all().delete()
-        validated_data['contacts'] = user.contacts
         instance = super().update(instance, validated_data)
+
         for item in items:
             OrderItem.objects.create(
                 order=instance,
@@ -156,10 +148,11 @@ class BasketSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         attrs = self.initial_data
+
         products_quantity = {
             product: quantity for product, quantity in ProductInfo.objects.values_list('id', 'quantity')
         }
-        items = self.initial_data['items']
+        items = attrs['items']
         for item in items:
             try:
                 product_id = item['product']
@@ -177,7 +170,7 @@ class BasketSerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError(
                         {'quantity': f"Товара с id {product_id} {products_quantity[product_id]}шт"}
                     )
-                elif quantity < 0:
+                elif quantity <= 0:
                     raise serializers.ValidationError(
                         {'quantity': 'Значение должно быть больше нуля.'}
                     )

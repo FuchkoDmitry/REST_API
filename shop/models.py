@@ -71,7 +71,7 @@ class ProductInfo(models.Model):
         unique_together = ("shop", "product", "article")
 
     def __str__(self):
-        return f'{self.model}, {self.price} р., {self.quantity} шт.'
+        return f'{self.model}, {self.price} р.'
 
 
 class Parameter(models.Model):
@@ -118,7 +118,7 @@ class Order(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Пользователь", related_name='orders'
     )
     contacts = models.ForeignKey(
-        UserInfo, on_delete=models.CASCADE, verbose_name="Контакты пользователя"
+        UserInfo, on_delete=models.CASCADE, verbose_name="Контакты пользователя", null=True, blank=True
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Заказ создан")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Время последнего изменения статуса")
@@ -144,3 +144,6 @@ class OrderItem(models.Model):
         verbose_name = "Позиция в заказе"
         verbose_name_plural = "Позиции в заказе"
         unique_together = ("order", "product")
+
+    def __str__(self):
+        return f'{self.product} - {self.quantity}'

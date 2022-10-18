@@ -144,11 +144,10 @@ class ConfirmEmailToken(models.Model):
 
 class UserInfo(models.Model):
 
-    user = models.OneToOneField(
+    user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='contacts',
-        primary_key=True
+        related_name='contacts'
     )
     city = models.CharField(max_length=50, verbose_name='Город')
     street = models.CharField(max_length=100, verbose_name='Улица')

@@ -1,6 +1,6 @@
 
 from django.http import JsonResponse
-from rest_framework import status
+from rest_framework import status, mixins
 from rest_framework.generics import CreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -33,7 +33,7 @@ class RegisterUserView(CreateAPIView):
                 'message': "Вы успешно зарегистрировались. Инструкция по "
                            "подтверждению учетной записи отправлена вам на почту."
             }
-            data.update(serializer.data)
+            data.update(serializer.validated_data)
             new_user_registered.send(sender=self.__class__, instance=user)
             return Response(data,
                             status=status.HTTP_201_CREATED)
@@ -167,7 +167,7 @@ class UserProfileView(APIView):
                         status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserContactsView(RetrieveUpdateDestroyAPIView):
+class UserContactsView(RetrieveUpdateDestroyAPIView, mixins.CreateModelMixin):
     """
     Получить, изменить(частично или полностью)
     и удалить контакты пользователя.
@@ -179,5 +179,14 @@ class UserContactsView(RetrieveUpdateDestroyAPIView):
 
     def perform_update(self, serializer):
         serializer.save(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save(user=request.user)
+            return Response(data=serializer.validated_data, status=201)
 
 

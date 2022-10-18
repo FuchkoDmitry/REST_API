@@ -15,5 +15,6 @@ urlpatterns = [
     path('reset-password/', ResetPasswordView.as_view()),
     path('reset-password/confirm/', ResetPasswordConfirmView.as_view()),
     path('profile/', UserProfileView.as_view()),
+    path('contacts/', UserContactsView.as_view()),
     path('contacts/<int:pk>', UserContactsView.as_view())
 ]
