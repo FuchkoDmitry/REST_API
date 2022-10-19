@@ -16,10 +16,14 @@ class ShopsViewSerializer(serializers.ModelSerializer):
     '''Сериализатор для списка магазинов'''
 
     id = serializers.HyperlinkedIdentityField(view_name='shop-detail')
+    is_open = serializers.BooleanField(default=True)
 
     class Meta:
         model = Shop
-        fields = ('id', 'name', 'site')
+        fields = ('id', 'name', 'site', 'is_open')
+
+
+
 
 
 class CategoriesViewSerializer(serializers.ModelSerializer):
@@ -110,7 +114,8 @@ class OrderedItemsSerializer(serializers.ModelSerializer):
 class BasketSerializer(serializers.ModelSerializer):
     '''Сериализатор товаров в корзине'''
 
-    contacts = UserContactsViewSerializer(required=False, allow_null=True, write_only=True)
+    # contacts = UserContactsViewSerializer(required=False, allow_null=True, write_only=True)
+    contacts = UserContactsViewSerializer(required=False, allow_null=True)
     ordered_items = OrderedItemsSerializer(many=True, read_only=True)
     total_price = serializers.IntegerField(read_only=True)
 
@@ -150,7 +155,8 @@ class BasketSerializer(serializers.ModelSerializer):
         attrs = self.initial_data
 
         products_quantity = {
-            product: quantity for product, quantity in ProductInfo.objects.values_list('id', 'quantity')
+            product: quantity for product, quantity in ProductInfo.objects.filter(
+                shop__is_open=True).values_list('id', 'quantity')
         }
         items = attrs['items']
         for item in items:
@@ -164,7 +170,7 @@ class BasketSerializer(serializers.ModelSerializer):
             else:
                 if product_id not in products_quantity:
                     raise serializers.ValidationError(
-                        {'product': f"Продукта с id {product_id} не существует"}
+                        {'product': f"Продукта с id {product_id} не существует или магазин не принимает заказы"}
                     )
                 elif quantity > products_quantity[product_id]:
                     raise serializers.ValidationError(
@@ -176,3 +182,14 @@ class BasketSerializer(serializers.ModelSerializer):
                     )
         return attrs
 
+
+class OrderDetailsSerializer(serializers.ModelSerializer):
+    '''Сериализатор деталей заказа'''
+
+    contacts = serializers.StringRelatedField()
+    ordered_items = OrderedItemsSerializer(many=True, read_only=True)
+    total_price = serializers.IntegerField()
+
+    class Meta:
+        model = Order
+        fields = ('id', 'contacts', 'total_price', 'status', 'created_at', 'updated_at', 'ordered_items')

@@ -3,9 +3,11 @@ from requests import get
 from requests.exceptions import ConnectionError
 import yaml
 from rest_framework.filters import SearchFilter
+from rest_framework.viewsets import ModelViewSet
 from yaml.scanner import ScannerError
 from rest_framework import status
-from rest_framework.generics import get_object_or_404, ListAPIView, RetrieveAPIView
+from rest_framework.generics import get_object_or_404, ListAPIView, RetrieveAPIView, UpdateAPIView, \
+    RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -18,10 +20,11 @@ from shop.models import Shop, Category, Product, ProductInfo, Parameter, Product
 from shop.permissions import IsShop, IsBuyer
 from shop.serializers import URLSerializer, ShopsViewSerializer, CategoriesViewSerializer, \
     CategoryItemsViewSerializer, ProductSerializer, ShopItemsViewSerializer, ProductInfoSerializer, \
-    ProductsViewSerializer, BasketSerializer, OrderedItemsSerializer
+    ProductsViewSerializer, BasketSerializer, OrderedItemsSerializer, OrderDetailsSerializer
 from shop.signals import order_confirmed
 from shop.mixins import MyPaginationMixin
 from users.models import UserInfo
+from users.permissions import IsOwner
 from users.serializers import UserContactsViewSerializer
 
 
@@ -89,6 +92,28 @@ class ImportProductsView(APIView):
                 )
 
         return Response({'status': 'Данные загружены'}, status=status.HTTP_200_OK)
+
+
+class GetOrUpdateStatus(RetrieveUpdateAPIView):
+    '''Получить или изменить статус получения заказов'''
+    permission_classes = [IsAuthenticated, IsOwner]
+    queryset = Shop.objects.all()
+    serializer_class = ShopsViewSerializer
+
+### в работе
+class GetPartnerOrders(ModelViewSet):
+    '''Получить заказы пользователей'''
+
+    permission_classes = [IsAuthenticated, IsShop]
+
+
+    def get_queryset(self):
+        queryset = Order.objects.filter(
+            ordered_items__product__shop__user=self.request.user).prefetch_related(
+            'ordered_items', 'ordered_items__product').distinct().annotate(
+            total_price=F('ordered_items__quantity') * F('ordered_items__product__price'))
+        return queryset
+###
 
 
 class ShopsView(ListAPIView):
@@ -239,6 +264,8 @@ class ConfirmOrderView(APIView):
             contact = get_object_or_404(UserInfo, id=contacts_id, user=user)
             basket.status, basket.contacts = 'new', contact
             basket.save()
+        else:
+            return Response({"Необходимо передать контаты для доставки"}, status=400)
         order_confirmed.send(sender=self.__class__, user=user, basket=basket, contacts=contact)
         return Response({"Спасибо за заказ. На вашу почту отправлено письмо с деталями"},
                         status=201)
@@ -261,21 +288,12 @@ class GetOrders(APIView, MyPaginationMixin):
         if page is not None:
             serializer = self.serializer_class(orders, many=True)
             return self.get_paginated_response(serializer.data)
-        # return Response(serializer.data, status=200)
 
 
-# class GetOrders(ListAPIView):
-#     permission_classes = [IsAuthenticated, IsBuyer]
-#     serializer_class = BasketSerializer
-#
-#     def get_queryset(self):
-#         orders = Order.objects.filter(user=self.request.user).order_by('-updated_at').prefetch_related(
-#             'ordered_items').annotate(
-#             total_sum=Sum(F('ordered_items__quantity') * F('ordered_items__product__price')))
-#         return orders
+class GetOrderDetail(RetrieveAPIView):
+    '''Детали заказа'''
 
-
-
-
-
-
+    permission_classes = [IsAuthenticated, IsOwner]
+    queryset = Order.objects.prefetch_related('ordered_items').annotate(
+            total_price=Sum(F('ordered_items__quantity') * F('ordered_items__product__price')))
+    serializer_class = OrderDetailsSerializer
