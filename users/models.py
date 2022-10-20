@@ -32,11 +32,11 @@ class UserManager(BaseUserManager):
         user.set_password(password)
         user.save(using=self._db)
         ###
-        if contacts:
-            user_contacts = UserInfo(user=user, **contacts)
-        else:
-            user_contacts = UserInfo(user=user)
-        user_contacts.save()
+        # if contacts:
+        #     user_contacts = UserInfo(user=user, **contacts)
+        # else:
+        #     user_contacts = UserInfo(user=user)
+        # user_contacts.save()
         ###
         return user
 
@@ -111,7 +111,7 @@ class User(AbstractUser):
     )
 
     def __str__(self):
-        return '%s %s' % (self.first_name, self.last_name)
+        return '%s %s(%s)' % (self.first_name, self.last_name, self.email)
 
     class Meta:
         verbose_name = 'Пользователь'
@@ -157,3 +157,8 @@ class UserInfo(models.Model):
 
     def __str__(self):
         return f'г. {self.city}, ул. {self.street}- {self.house}- {self.apartment}. тел: {self.phone}'
+
+    class Meta:
+        verbose_name = 'Контакт'
+        verbose_name_plural = "Контакты"
+        ordering = ['user', 'city']

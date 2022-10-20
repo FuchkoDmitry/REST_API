@@ -193,3 +193,15 @@ class OrderDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ('id', 'contacts', 'total_price', 'status', 'created_at', 'updated_at', 'ordered_items')
+
+
+class OrdersSerializer(serializers.ModelSerializer):
+    total_price = serializers.IntegerField()
+    contacts = serializers.StringRelatedField()
+    user = serializers.StringRelatedField()
+    ordered_items = serializers.StringRelatedField(many=True)
+
+
+    class Meta:
+        model = Order
+        fields = ('id', 'user', 'status', 'total_price', 'created_at', 'contacts', 'ordered_items')

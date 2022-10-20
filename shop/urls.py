@@ -1,11 +1,13 @@
 from django.urls import path
 
 from shop.views import ImportProductsView, ShopsView, CategoriesView, CategoryItemsView, ShopItemsView, \
-    ProductView, ProductsView, BasketView, ConfirmOrderView, GetOrders, GetOrderDetail, GetOrUpdateStatus
+    ProductView, ProductsView, BasketView, ConfirmOrderView, GetOrders, GetOrderDetail, GetOrUpdateStatus, \
+    GetPartnerOrders
 
 urlpatterns = [
     path('partner/update/', ImportProductsView.as_view()),
     path('partner/status/<int:pk>/', GetOrUpdateStatus.as_view()),
+    path('partner/orders/', GetPartnerOrders.as_view()),
     path('shops/', ShopsView.as_view()),
     path('shops/<int:pk>/', ShopItemsView.as_view(), name='shop-detail'),
     path('categories/', CategoriesView.as_view()),

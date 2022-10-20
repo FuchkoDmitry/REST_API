@@ -18,9 +18,12 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from shop.models import Shop, Category, Product, ProductInfo, Parameter, ProductParameter, Order, OrderItem
 from shop.permissions import IsShop, IsBuyer
-from shop.serializers import URLSerializer, ShopsViewSerializer, CategoriesViewSerializer, \
-    CategoryItemsViewSerializer, ProductSerializer, ShopItemsViewSerializer, ProductInfoSerializer, \
-    ProductsViewSerializer, BasketSerializer, OrderedItemsSerializer, OrderDetailsSerializer
+from shop.serializers import (
+    URLSerializer, ShopsViewSerializer, CategoriesViewSerializer,
+    CategoryItemsViewSerializer, ProductSerializer, ShopItemsViewSerializer,
+    ProductInfoSerializer, ProductsViewSerializer, BasketSerializer,
+    OrderedItemsSerializer, OrderDetailsSerializer, OrdersSerializer
+)
 from shop.signals import order_confirmed
 from shop.mixins import MyPaginationMixin
 from users.models import UserInfo
@@ -100,20 +103,18 @@ class GetOrUpdateStatus(RetrieveUpdateAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopsViewSerializer
 
-### в работе
-class GetPartnerOrders(ModelViewSet):
+
+class GetPartnerOrders(ListAPIView):
     '''Получить заказы пользователей'''
 
     permission_classes = [IsAuthenticated, IsShop]
-
+    serializer_class = OrdersSerializer
 
     def get_queryset(self):
-        queryset = Order.objects.filter(
-            ordered_items__product__shop__user=self.request.user).prefetch_related(
-            'ordered_items', 'ordered_items__product').distinct().annotate(
-            total_price=F('ordered_items__quantity') * F('ordered_items__product__price'))
+        queryset = Order.objects.filter(ordered_items__product__shop__user=self.request.user).exclude(
+            status='basket').prefetch_related('ordered_items', 'ordered_items__product').annotate(
+            total_price=Sum(F('ordered_items__quantity') * F('ordered_items__product__price'))).distinct()
         return queryset
-###
 
 
 class ShopsView(ListAPIView):
@@ -277,7 +278,7 @@ class GetOrders(APIView, MyPaginationMixin):
     """
 
     permission_classes = [IsAuthenticated, IsBuyer]
-    serializer_class = BasketSerializer
+    serializer_class = OrdersSerializer # поменять на OrdersSerializer
     pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
 
     def get(self, request):

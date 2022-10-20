@@ -22,7 +22,7 @@ class Shop(models.Model):
         ordering = ("name",)
 
     def __str__(self):
-        return self.name
+        return f'"{self.name}"'
 
 
 class Category(models.Model):
@@ -71,7 +71,7 @@ class ProductInfo(models.Model):
         unique_together = ("shop", "product", "article")
 
     def __str__(self):
-        return f'{self.model}, {self.price} р.'
+        return f'{self.shop} {self.model}, {self.price} р.'
 
 
 class Parameter(models.Model):
