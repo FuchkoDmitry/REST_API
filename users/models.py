@@ -49,6 +49,7 @@ class UserManager(BaseUserManager):
     def create_superuser(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
 
         if extra_fields.get('is_staff') is not True:
             raise ValueError('Superuser must have is_staff=True.')
@@ -115,7 +116,7 @@ class User(AbstractUser):
 
     class Meta:
         verbose_name = 'Пользователь'
-        verbose_name_plural = "Список пользователей"
+        verbose_name_plural = "Пользователи"
         ordering = ('email',)
 
 

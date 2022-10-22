@@ -249,7 +249,7 @@ class ConfirmOrderView(APIView):
         contacts_id = contacts.pop('id', 0)
         user = request.user
         basket = Order.objects.filter(user=user, status='basket').prefetch_related(
-            'ordered_items').annotate(
+            'ordered_items', 'ordered_items__product').annotate(
             total_price=Sum(F('ordered_items__quantity') * F('ordered_items__product__price')
                             )).first()
         if not basket:

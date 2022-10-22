@@ -79,7 +79,7 @@ class Parameter(models.Model):
 
     class Meta:
         verbose_name = "Параметр"
-        verbose_name_plural = "Список параметров"
+        verbose_name_plural = "Параметры"
 
     def __str__(self):
         return self.name
@@ -95,8 +95,8 @@ class ProductParameter(models.Model):
     value = models.CharField(max_length=55, verbose_name="Значение")
 
     class Meta:
-        verbose_name = "Параметр"
-        verbose_name_plural = "Список параметров"
+        verbose_name = "Параметр продукта"
+        verbose_name_plural = "Параметры продукта"
         unique_together = ("product", "parameter")
 
     def __str__(self):
@@ -126,7 +126,7 @@ class Order(models.Model):
 
     class Meta:
         verbose_name = "Заказ"
-        verbose_name_plural = "Список заказов"
+        verbose_name_plural = "Заказы"
         ordering = ('-created_at',)
 
     def __str__(self):
