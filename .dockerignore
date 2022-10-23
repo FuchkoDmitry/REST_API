@@ -1,0 +1,5 @@
+data/*
+models_scheme.png
+postman_requests.md
+venv/*
+__pycache__
