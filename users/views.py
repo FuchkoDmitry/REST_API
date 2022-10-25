@@ -15,6 +15,8 @@ from users.serializers import (
     UserContactsViewSerializer
 )
 from users.signals import new_user_registered, account_confirmed, reset_password, reset_password_confirmed
+from users.tasks import user_register_email_task, account_confirmed_email_task, reset_password_email_task, \
+    reset_password_confirmed_email_task
 
 
 class RegisterUserView(CreateAPIView):
@@ -34,7 +36,8 @@ class RegisterUserView(CreateAPIView):
                            "подтверждению учетной записи отправлена вам на почту."
             }
             data.update(serializer.validated_data)
-            new_user_registered.send(sender=self.__class__, instance=user)
+            user_register_email_task.delay(user.id)
+            # new_user_registered.send(sender=self.__class__, instance=user)
             return Response(data,
                             status=status.HTTP_201_CREATED)
         else:
@@ -59,7 +62,8 @@ class ConfirmAccountView(APIView):
                                     status=status.HTTP_400_BAD_REQUEST)
             token.user.is_active = True
             token.user.save()
-            account_confirmed.send(sender=self.__class__, instance=token.user)
+            account_confirmed_email_task.delay(request.data['email'])
+            # account_confirmed.send(sender=self.__class__, instance=token.user)
             token.delete()
             return JsonResponse({"success": "Вы подтвердили учетную запись."},
                                 status=status.HTTP_200_OK)
@@ -112,7 +116,8 @@ class ResetPasswordView(APIView):
         if user is None:
             return Response({'email': 'Пользователя с данным email не существует'},
                             status=status.HTTP_400_BAD_REQUEST)
-        reset_password.send(sender=self.__class__, instance=user)
+        reset_password_email_task.delay(user.id)
+        # reset_password.send(sender=self.__class__, instance=user)
         return Response(
             {'message': f'{user}, Вам на почту отправлено письмо с инструцией по смене пароля'},
             status=status.HTTP_200_OK
@@ -134,7 +139,8 @@ class ResetPasswordConfirmView(APIView):
             user = User.objects.get(email=serializer.validated_data['email'])
             user.set_password(serializer.validated_data['password'])
             user.save()
-            reset_password_confirmed.send(sender=self.__class__, instance=user)
+            reset_password_confirmed_email_task.delay(user.id)
+            # reset_password_confirmed.send(sender=self.__class__, instance=user)
             token = Token.objects.filter(user=user).first()
             if token:
                 token.delete()

@@ -18,12 +18,14 @@ services:
     build: ./
     depends_on:
       - db
+      - redis
     restart: always
     ports:
       - "8080:8080"
     env_file:
       - .env
     volumes:
+      - ./:/code/
       - static:/static
     entrypoint: /code/entrypoint.sh
 
@@ -32,10 +34,27 @@ services:
     ports:
       - "80:80"
     volumes:
+      - ./:/code/
       - static:/static
     depends_on:
       - web
     restart: on-failure
+
+  redis:
+    image: "redis:alpine"
+    restart: always
+    container_name: "redis"
+
+  celery:
+    build: ./
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - web
+    volumes:
+      - ./:/code/
+    command: ['celery', '-A', 'orders', 'worker', '-l', 'info']
 
 volumes:
   pgdata:

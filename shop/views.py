@@ -26,6 +26,7 @@ from shop.serializers import (
 )
 from shop.signals import order_confirmed
 from shop.mixins import MyPaginationMixin
+from shop.tasks import new_order_email_task, new_order_email_to_admin_task, do_import_task
 from users.models import UserInfo
 from users.permissions import IsOwner
 from users.serializers import UserContactsViewSerializer
@@ -59,40 +60,42 @@ class ImportProductsView(APIView):
         try:
             stream = get(url).content
             data = yaml.load(stream, Loader=SafeLoader)
-            shop_data = data['shop']
+            # shop_data = data['shop']
         except (KeyError, MaxRetryError, NewConnectionError, ConnectionError, ScannerError):
             return Response({'url': 'некорректный yaml файл'},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        shop, created = Shop.objects.get_or_create(user=request.user, **shop_data)
-        if created and (shop.url == '' and shop.filename == ''):
-            separator = url.rfind('/')
-            shop.url = url[:separator + 1]
-            shop.filename = url[separator + 1:]
-            shop.save()
+        do_import_task.delay(url, request.user.id, data)
 
-        categories = data.get('categories')
-        if categories:
-            for category in categories:
-                category_object, _ = Category.objects.get_or_create(id=category['id'],
-                                                                    name=category['name'])
-                category_object.shops.add(shop.id)
-                category_object.save()
-        ProductInfo.objects.filter(shop_id=shop.id).delete()
-        for item in data['goods']:
-            product, _ = Product.objects.get_or_create(
-                name=item['name'], category_id=item['category'], rrc=item['price_rrc']
-            )
-            product_info = ProductInfo.objects.create(
-                shop_id=shop.id, product_id=product.id, model=item['model'],
-                article=item['id'], price=item['price'], quantity=item['quantity']
-            )
-            for name, value in item['parameters'].items():
-                parameter, _ = Parameter.objects.get_or_create(name=name)
-                ProductParameter.objects.update_or_create(
-                    product_id=product_info.id, parameter_id=parameter.id,
-                    defaults={'value': value}
-                )
+        # shop, created = Shop.objects.get_or_create(user=request.user, **shop_data)
+        # if created and (shop.url == '' and shop.filename == ''):
+        #     separator = url.rfind('/')
+        #     shop.url = url[:separator + 1]
+        #     shop.filename = url[separator + 1:]
+        #     shop.save()
+        #
+        # categories = data.get('categories')
+        # if categories:
+        #     for category in categories:
+        #         category_object, _ = Category.objects.get_or_create(id=category['id'],
+        #                                                             name=category['name'])
+        #         category_object.shops.add(shop.id)
+        #         category_object.save()
+        # ProductInfo.objects.filter(shop_id=shop.id).delete()
+        # for item in data['goods']:
+        #     product, _ = Product.objects.get_or_create(
+        #         name=item['name'], category_id=item['category'], rrc=item['price_rrc']
+        #     )
+        #     product_info = ProductInfo.objects.create(
+        #         shop_id=shop.id, product_id=product.id, model=item['model'],
+        #         article=item['id'], price=item['price'], quantity=item['quantity']
+        #     )
+        #     for name, value in item['parameters'].items():
+        #         parameter, _ = Parameter.objects.get_or_create(name=name)
+        #         ProductParameter.objects.update_or_create(
+        #             product_id=product_info.id, parameter_id=parameter.id,
+        #             defaults={'value': value}
+        #         )
 
         return Response({'status': 'Данные загружены'}, status=status.HTTP_200_OK)
 
@@ -248,10 +251,7 @@ class ConfirmOrderView(APIView):
         contacts = request.data
         contacts_id = contacts.pop('id', 0)
         user = request.user
-        basket = Order.objects.filter(user=user, status='basket').prefetch_related(
-            'ordered_items', 'ordered_items__product').annotate(
-            total_price=Sum(F('ordered_items__quantity') * F('ordered_items__product__price')
-                            )).first()
+        basket = Order.objects.filter(user=user, status='basket').first()
         if not basket:
             return Response({"basket": "Сначала добавьте товары в корзину"},
                             status=400)
@@ -267,7 +267,9 @@ class ConfirmOrderView(APIView):
             basket.save()
         else:
             return Response({"Необходимо передать контаты для доставки"}, status=400)
-        order_confirmed.send(sender=self.__class__, user=user, basket=basket, contacts=contact)
+        new_order_email_task.delay(user.id, basket.id, contact.id)
+        new_order_email_to_admin_task.delay(user.id, basket.id, contact.id)
+        # order_confirmed.send(sender=self.__class__, user=user, basket=basket, contacts=contact)
         return Response({"Спасибо за заказ. На вашу почту отправлено письмо с деталями"},
                         status=201)
 
