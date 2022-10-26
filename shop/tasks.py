@@ -68,9 +68,11 @@ def new_order_email_to_admin_task(user_id, basket_id, contacts_id):
 
 @shared_task()
 def do_import_task(url, user_id, data):
+    # print(url, user_id, data)
     with transaction.atomic():
-        shop, created = Shop.objects.get_or_create(user__id=user_id, **data['shop'])
-        if created and (shop.url == '' and shop.filename == ''):
+        # user = User.objects.get(id=user_id)
+        shop, created = Shop.objects.get_or_create(user_id=user_id, **data['shop'])
+        if created and (not shop.url and not shop.filename):
             separator = url.rfind('/')
             shop.url = url[:separator + 1]
             shop.filename = url[separator + 1:]
