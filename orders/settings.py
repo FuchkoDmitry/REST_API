@@ -89,7 +89,7 @@ DATABASES = {
     'default': {
         'ENGINE': config('POSTGRES_ENGINE'),
         'NAME': config('POSTGRES_DB'),
-        'HOST': config('POSTGRES_HOST', default='127.0.0.1'),
+        'HOST': config('POSTGRES_HOST'),
         'PORT': config('POSTGRES_PORT'),
         'USER': config('POSTGRES_USER'),
         'PASSWORD': config('POSTGRES_PASSWORD')
@@ -162,7 +162,7 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 5
 }
 
-CELERY_BROKER_URL = config('CELERY_BROKER', default='redis://127.0.0.1:6379/0')
-CELERY_RESULT_BACKEND = config('CELERY_BACKEND', default='redis://127.0.0.1:6379/0')
+CELERY_BROKER_URL = config('CELERY_BROKER')
+CELERY_RESULT_BACKEND = config('CELERY_BACKEND')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
