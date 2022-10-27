@@ -10,6 +10,21 @@ from users.models import User, UserInfo
 
 
 @shared_task()
+def change_status_email_task(user_id, order_id, status):
+
+    '''Письмо о изменении статуса заказа'''
+
+    user = User.objects.get(id=user_id)
+    admin = User.objects.get(is_superuser=True)
+    send_mail(
+        'Обновлен статус заказа',
+        f'Заказ № {order_id}, статус: {status}',
+        settings.EMAIL_HOST_USER,
+        [user.email, admin.email]
+    )
+
+
+@shared_task()
 def new_order_email_task(user_id, basket_id, contacts_id):
 
     '''Письмо о создании нового заказа'''
@@ -68,9 +83,7 @@ def new_order_email_to_admin_task(user_id, basket_id, contacts_id):
 
 @shared_task()
 def do_import_task(url, user_id, data):
-    # print(url, user_id, data)
     with transaction.atomic():
-        # user = User.objects.get(id=user_id)
         shop, created = Shop.objects.get_or_create(user_id=user_id, **data['shop'])
         if created and (not shop.url and not shop.filename):
             separator = url.rfind('/')

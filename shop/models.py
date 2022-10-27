@@ -2,7 +2,6 @@
 from django.db import models
 from django.conf import settings
 
-# Create your models here.
 from users.models import UserInfo
 
 
@@ -18,7 +17,7 @@ class Shop(models.Model):
 
     class Meta:
         verbose_name = "Магазин"
-        verbose_name_plural = "Список магазинов"
+        verbose_name_plural = "Магазины"
         ordering = ("name",)
 
     def __str__(self):
@@ -32,7 +31,7 @@ class Category(models.Model):
 
     class Meta:
         verbose_name = "Категория"
-        verbose_name_plural = "Список категорий"
+        verbose_name_plural = "Категории"
         ordering = ("name",)
 
     def __str__(self):
@@ -48,7 +47,7 @@ class Product(models.Model):
 
     class Meta:
         verbose_name = "Продукт"
-        verbose_name_plural = "Список продуктов"
+        verbose_name_plural = "Продукты"
         ordering = ('name',)
 
     def __str__(self):
