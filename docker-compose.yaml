@@ -13,32 +13,32 @@ services:
       - .env
     restart: always
 
-  web:
-    container_name: django_app
-    build: ./
-    depends_on:
-      - db
-      - redis
-    restart: always
-    ports:
-      - "8080:8080"
-    env_file:
-      - .env
-    volumes:
-      - ./:/code/
-      - static:/static
-    entrypoint: /code/entrypoint.sh
+#  web:
+#    container_name: django_app
+#    build: ./
+#    depends_on:
+#      - db
+#      - redis
+#    restart: always
+#    ports:
+#      - "8080:8080"
+#    env_file:
+#      - .env
+#    volumes:
+#      - ./:/code/
+#      - static:/static
+#    entrypoint: /code/entrypoint.sh
 
-  nginx:
-    build: ./nginx
-    ports:
-      - "80:80"
-    volumes:
-      - ./:/code/
-      - static:/static
-    depends_on:
-      - web
-    restart: on-failure
+#  nginx:
+#    build: ./nginx
+#    ports:
+#      - "80:80"
+#    volumes:
+#      - ./:/code/
+#      - static:/static
+#    depends_on:
+#      - web
+#    restart: on-failure
 
   redis:
     image: "redis:alpine"
@@ -51,7 +51,7 @@ services:
       - .env
     depends_on:
       - redis
-      - web
+#      - web
     volumes:
       - ./:/code/
     command: ['celery', '-A', 'orders', 'worker', '-l', 'info']

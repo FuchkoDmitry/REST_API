@@ -18,9 +18,15 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
+from .yasg import urlpatterns as doc_urls
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/user/', include('users.urls')),
     # path('api/v1/partner/', include('shop.urls')),
     path('api/v1/', include('shop.urls')),
 ]
+
+urlpatterns += doc_urls
+

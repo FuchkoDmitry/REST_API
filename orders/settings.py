@@ -48,7 +48,8 @@ INSTALLED_APPS = [
     'shop.apps.ShopConfig',
     'rest_framework',
     'rest_framework.authtoken',
-    'django_rest_passwordreset'
+    'django_rest_passwordreset',
+    'drf_yasg'
 ]
 
 MIDDLEWARE = [
@@ -89,7 +90,7 @@ DATABASES = {
     'default': {
         'ENGINE': config('POSTGRES_ENGINE'),
         'NAME': config('POSTGRES_DB'),
-        'HOST': config('POSTGRES_HOST'),
+        'HOST': config('POSTGRES_HOST', default='127.0.0.1'),
         'PORT': config('POSTGRES_PORT'),
         'USER': config('POSTGRES_USER'),
         'PASSWORD': config('POSTGRES_PASSWORD')
