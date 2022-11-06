@@ -15,7 +15,7 @@ class URLSerializer(serializers.Serializer): # noqa
 class ShopsViewSerializer(serializers.ModelSerializer):
     '''Сериализатор для списка магазинов'''
 
-    id = serializers.HyperlinkedIdentityField(view_name='shop-detail')
+    id = serializers.HyperlinkedIdentityField(view_name='shops-detail')
     is_open = serializers.BooleanField(default=True)
 
     class Meta:
@@ -29,7 +29,7 @@ class ShopsViewSerializer(serializers.ModelSerializer):
 class CategoriesViewSerializer(serializers.ModelSerializer):
     '''Сериализатор для списка категорий'''
 
-    id = serializers.HyperlinkedIdentityField(view_name='category-products')
+    id = serializers.HyperlinkedIdentityField(view_name='categories-detail')
 
     class Meta:
         model = Category
@@ -48,7 +48,7 @@ class ProductParametersSerializer(serializers.ModelSerializer):
 class ProductsViewSerializer(serializers.ModelSerializer):
     '''Сериализатор для списка всех продуктов с уточнением наличия в магазинах'''
     id = serializers.HyperlinkedIdentityField(read_only=True, view_name='product-detail')
-    shops = serializers.HyperlinkedRelatedField(read_only=True, many=True, view_name='shop-detail')
+    shops = serializers.HyperlinkedRelatedField(read_only=True, many=True, view_name='shops-detail')
     category = serializers.StringRelatedField()
 
     class Meta:

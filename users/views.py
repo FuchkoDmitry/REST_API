@@ -6,6 +6,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.exceptions import MethodNotAllowed
 
 from users.models import User, ConfirmEmailToken, UserInfo
 from users.permissions import IsOwnerOrReadOnly, IsOwner
@@ -37,7 +39,6 @@ class RegisterUserView(CreateAPIView):
             }
             data.update(serializer.validated_data)
             user_register_email_task.delay(user.id)
-            # new_user_registered.send(sender=self.__class__, instance=user)
             return Response(data,
                             status=status.HTTP_201_CREATED)
         else:
@@ -63,7 +64,6 @@ class ConfirmAccountView(APIView):
             token.user.is_active = True
             token.user.save()
             account_confirmed_email_task.delay(request.data['email'])
-            # account_confirmed.send(sender=self.__class__, instance=token.user)
             token.delete()
             return JsonResponse({"success": "Вы подтвердили учетную запись."},
                                 status=status.HTTP_200_OK)
@@ -117,7 +117,6 @@ class ResetPasswordView(APIView):
             return Response({'email': 'Пользователя с данным email не существует'},
                             status=status.HTTP_400_BAD_REQUEST)
         reset_password_email_task.delay(user.id)
-        # reset_password.send(sender=self.__class__, instance=user)
         return Response(
             {'message': f'{user}, Вам на почту отправлено письмо с инструцией по смене пароля'},
             status=status.HTTP_200_OK
@@ -140,7 +139,6 @@ class ResetPasswordConfirmView(APIView):
             user.set_password(serializer.validated_data['password'])
             user.save()
             reset_password_confirmed_email_task.delay(user.id)
-            # reset_password_confirmed.send(sender=self.__class__, instance=user)
             token = Token.objects.filter(user=user).first()
             if token:
                 token.delete()
@@ -173,26 +171,21 @@ class UserProfileView(APIView):
                         status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserContactsView(RetrieveUpdateDestroyAPIView, mixins.CreateModelMixin):
+class UserContactsViewSet(ModelViewSet):
     """
-    Получить, изменить(частично или полностью)
+    Создать, получить, изменить(частично или полностью)
     и удалить контакты пользователя.
     """
-
     queryset = UserInfo.objects.all()
     serializer_class = UserContactsViewSerializer
-    permission_classes = [IsOwnerOrReadOnly]
+    permission_classes = [IsAuthenticated, IsOwner]
 
-    def perform_update(self, serializer):
-        serializer.save(user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-    def post(self, request):
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save(user=request.user)
-            return Response(data=serializer.validated_data, status=201)
+    def perform_update(self, serializer):
+        serializer.save(user=self.request.user)
 
-
+    def list(self, request, *args, **kwargs):
+        raise MethodNotAllowed(request.method)

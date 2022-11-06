@@ -11,6 +11,7 @@ from rest_framework.generics import get_object_or_404, ListAPIView, RetrieveAPIV
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.settings import api_settings
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 from yaml.loader import SafeLoader
@@ -60,42 +61,11 @@ class ImportProductsView(APIView):
         try:
             stream = get(url).content
             data = yaml.load(stream, Loader=SafeLoader)
-            # shop_data = data['shop']
         except (KeyError, MaxRetryError, NewConnectionError, ConnectionError, ScannerError):
             return Response({'url': 'некорректный yaml файл'},
                             status=status.HTTP_400_BAD_REQUEST)
 
         do_import_task.delay(url, request.user.id, data)
-
-        # shop, created = Shop.objects.get_or_create(user=request.user, **shop_data)
-        # if created and (shop.url == '' and shop.filename == ''):
-        #     separator = url.rfind('/')
-        #     shop.url = url[:separator + 1]
-        #     shop.filename = url[separator + 1:]
-        #     shop.save()
-        #
-        # categories = data.get('categories')
-        # if categories:
-        #     for category in categories:
-        #         category_object, _ = Category.objects.get_or_create(id=category['id'],
-        #                                                             name=category['name'])
-        #         category_object.shops.add(shop.id)
-        #         category_object.save()
-        # ProductInfo.objects.filter(shop_id=shop.id).delete()
-        # for item in data['goods']:
-        #     product, _ = Product.objects.get_or_create(
-        #         name=item['name'], category_id=item['category'], rrc=item['price_rrc']
-        #     )
-        #     product_info = ProductInfo.objects.create(
-        #         shop_id=shop.id, product_id=product.id, model=item['model'],
-        #         article=item['id'], price=item['price'], quantity=item['quantity']
-        #     )
-        #     for name, value in item['parameters'].items():
-        #         parameter, _ = Parameter.objects.get_or_create(name=name)
-        #         ProductParameter.objects.update_or_create(
-        #             product_id=product_info.id, parameter_id=parameter.id,
-        #             defaults={'value': value}
-        #         )
 
         return Response({'status': 'Данные загружены'}, status=status.HTTP_200_OK)
 
@@ -120,28 +90,32 @@ class GetPartnerOrders(ListAPIView):
         return queryset
 
 
-class ShopsView(ListAPIView):
-    '''Список магазинов'''
-    serializer_class = ShopsViewSerializer
-    queryset = Shop.objects.filter(is_open=True).all()
+class ShopsViewSet(ReadOnlyModelViewSet):
+    '''Список магазинов и товары из одного магазина'''
+
+    def get_queryset(self):
+        if self.action == 'retrieve':
+            return Shop.objects.filter(is_open=True).prefetch_related('product_infos')
+        return Shop.objects.filter(is_open=True).all()
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return ShopItemsViewSerializer
+        return ShopsViewSerializer
 
 
-class CategoriesView(ListAPIView):
-    '''Список категорий'''
-    serializer_class = CategoriesViewSerializer
-    queryset = Category.objects.all()
+class CategoriesViewSet(ReadOnlyModelViewSet):
+    '''Список категорий и товары определенной категории'''
 
+    def get_queryset(self):
+        if self.action == 'retrieve':
+            return Category.objects.prefetch_related('products')
+        return Category.objects.all()
 
-class CategoryItemsView(RetrieveAPIView):
-    '''Все товары определенной категории'''
-    queryset = Category.objects.prefetch_related('products')
-    serializer_class = CategoryItemsViewSerializer
-
-
-class ShopItemsView(RetrieveAPIView):
-    '''Все товары определенного магазина'''
-    queryset = Shop.objects.prefetch_related('product_infos')
-    serializer_class = ShopItemsViewSerializer
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return CategoryItemsViewSerializer
+        return CategoriesViewSerializer
 
 
 class ProductView(RetrieveAPIView):
@@ -280,7 +254,7 @@ class GetOrders(APIView, MyPaginationMixin):
     """
 
     permission_classes = [IsAuthenticated, IsBuyer]
-    serializer_class = OrdersSerializer # поменять на OrdersSerializer
+    serializer_class = OrdersSerializer
     pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
 
     def get(self, request):
