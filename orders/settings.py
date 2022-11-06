@@ -160,7 +160,19 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 40
+    'PAGE_SIZE': 40,
+    'DEFAULT_THROTTLE_CLASSES': [
+        'throttling.throttles.UserMinRateThrottle',
+        'throttling.throttles.UserDayRateThrottle',
+        'throttling.throttles.AnonMinRateThrottle',
+        'throttling.throttles.AnonDayRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'user_burst': '60/min',
+        'user_sustained': '10000/day',
+        'anon_burst': '10/min',
+        'anon_sustained': '1000/day'
+    }
 }
 
 CELERY_BROKER_URL = config('CELERY_BROKER')
