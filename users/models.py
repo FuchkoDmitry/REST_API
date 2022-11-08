@@ -21,7 +21,7 @@ class UserManager(BaseUserManager):
     """
     use_in_migrations = True
 
-    def _create_user(self, email, password, contacts=None, **extra_fields):
+    def _create_user(self, email, password='', contacts=None, **extra_fields):
         """
         создание и сохранение пользователя по email и паролю
         """
@@ -40,7 +40,7 @@ class UserManager(BaseUserManager):
         ###
         return user
 
-    def create_user(self, email, password, **extra_fields):
+    def create_user(self, email, password='', **extra_fields):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
 

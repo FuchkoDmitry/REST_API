@@ -13,6 +13,7 @@ import os
 
 from pathlib import Path
 
+import social_core.backends.vk
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -49,7 +50,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'django_rest_passwordreset',
-    'drf_yasg'
+    'drf_yasg',
+
+    'drf_social_oauth2',
+    'oauth2_provider',
+    'social_django',
 ]
 
 MIDDLEWARE = [
@@ -75,6 +80,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -158,6 +165,8 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+        'drf_social_oauth2.authentication.SocialAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 40,
@@ -174,6 +183,30 @@ REST_FRAMEWORK = {
         'anon_sustained': '1000/day'
     }
 }
+
+SOCIAL_AUTH_VK_OAUTH2_KEY = '51470208'
+SOCIAL_AUTH_VK_OAUTH2_SECRET = '9VnOs8rgyGGYLxcgzW2d'
+SOCIAL_AUTH_VK_OAUTH2_SCOPE = ['email']
+SOCIAL_AUTH_VK_PROFILE_EXTRA_PARAMS = {
+    'fields': 'email, username'
+}
+
+SOCIAL_AUTH_FACEBOOK_KEY = '1273429533225470'
+SOCIAL_AUTH_FACEBOOK_SECRET = '68faad8ba66472ef8a6af84a9c378aa0'
+
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+    'fields': 'id, name, email'
+}
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.facebook.FacebookAppOAuth2',
+    'social_core.backends.facebook.FacebookOAuth2',
+    "social_core.backends.vk.VKOAuth2",
+    'drf_social_oauth2.backends.DjangoOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
 
 CELERY_BROKER_URL = config('CELERY_BROKER')
 CELERY_RESULT_BACKEND = config('CELERY_BACKEND')
