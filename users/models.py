@@ -31,13 +31,6 @@ class UserManager(BaseUserManager):
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
-        ###
-        # if contacts:
-        #     user_contacts = UserInfo(user=user, **contacts)
-        # else:
-        #     user_contacts = UserInfo(user=user)
-        # user_contacts.save()
-        ###
         return user
 
     def create_user(self, email, password, **extra_fields):
@@ -94,7 +87,7 @@ class User(AbstractUser):
     )
     is_active = models.BooleanField(
         _("active"),
-        default=False,
+        default=True,
         help_text=_(
             'Designates whether this user should be treated as active.'
             'Unselect this instead of deleting accounts'

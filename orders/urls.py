@@ -18,6 +18,8 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
+# from users import views
+from users.views import VkLogin
 from .yasg import urlpatterns as doc_urls
 
 
@@ -25,6 +27,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/user/', include('users.urls')),
     path('api/v1/', include('shop.urls')),
+    path('auth/', include('allauth.urls')),
+    path('rest-auth/vk/login/', VkLogin.as_view())
+    # path('rest-auth/', include('rest_auth.urls'))
 ]
 
 urlpatterns += doc_urls

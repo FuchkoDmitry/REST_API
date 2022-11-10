@@ -1,4 +1,8 @@
 
+from allauth.socialaccount.providers.vk.views import VKOAuth2Adapter
+from allauth.socialaccount.providers.oauth2.client import OAuth2Client
+from dj_rest_auth.registration.views import SocialLoginView
+# rest_auth.registration.serializers.SocialLoginSerializer
 from django.http import JsonResponse
 from rest_framework import status, mixins
 from rest_framework.generics import CreateAPIView, RetrieveUpdateDestroyAPIView
@@ -14,11 +18,18 @@ from users.permissions import IsOwnerOrReadOnly, IsOwner
 from users.serializers import (
     UserRegisterSerializer, UserLoginSerializer,
     ResetPasswordConfirmSerializer, UserProfileViewSerializer,
-    UserContactsViewSerializer
+    UserContactsViewSerializer, VKOAuth2Serializer
 )
 from users.signals import new_user_registered, account_confirmed, reset_password, reset_password_confirmed
 from users.tasks import user_register_email_task, account_confirmed_email_task, reset_password_email_task, \
     reset_password_confirmed_email_task
+
+
+class VkLogin(SocialLoginView):
+    adapter_class = VKOAuth2Adapter
+    client_class = OAuth2Client
+    callback_url = 'http://localhost:8000'
+    serializer_class = VKOAuth2Serializer
 
 
 class RegisterUserView(CreateAPIView):

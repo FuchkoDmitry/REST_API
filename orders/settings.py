@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 import os
 
 from pathlib import Path
-
+from django.urls import reverse_lazy
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -43,14 +43,57 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'django.contrib.sites',
     'django.contrib.staticfiles',
     'users.apps.UsersConfig',
     'shop.apps.ShopConfig',
     'rest_framework',
     'rest_framework.authtoken',
+    'dj_rest_auth',
     'django_rest_passwordreset',
-    'drf_yasg'
+    'drf_yasg',
+    # 'rest_auth',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.vk',
+    'allauth.socialaccount.providers.facebook',
+    'allauth.socialaccount.providers.github'
 ]
+
+SITE_ID = 1
+# ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_UNIQUE_EMAIL = True
+# ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+# SOCIALACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+SOCIALACCOUNT_AUTO_SIGNUP = True
+# ACCOUNT_LOGOUT_REDIRECT_URL = '/api/v1/products/'
+# ACCOUNT_LOGIN_REDIRECT_URL = 'http://localhost:8000'
+# ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 1000
+LOGIN_REDIRECT_URL = 'http://localhost:8000/api/v1/products/'
+# ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+# ACCOUNT_EMAIL_CONFIRMATION_COOLDOWN = 1
+# ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+# ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = reverse_lazy('account_confirm_complete')
+# ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = reverse_lazy('account_confirm_complete')
+
+
+SOCIALACCOUNT_PROVIDERS = {
+    'vk': {
+        'APP': {
+            'client_id': '51470208',
+            'secret': '9VnOs8rgyGGYLxcgzW2d'
+        },
+        'SCOPE': [
+            'profile',
+            'email'
+        ]
+    }
+}
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -83,6 +126,10 @@ TEMPLATES = [
 WSGI_APPLICATION = 'orders.wsgi.application'
 
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
@@ -147,6 +194,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.User'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = config('EMAIL_HOST')
 EMAIL_PORT = config('EMAIL_PORT', cast=int)
 EMAIL_HOST_USER = config('EMAIL')

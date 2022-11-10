@@ -1,10 +1,8 @@
 
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
 from django.utils.translation import gettext_lazy as _
 
 from shop.models import Shop, Category, Product, ProductInfo, ProductParameter, Order, OrderItem
-from users.models import UserInfo
 from users.serializers import UserContactsViewSerializer
 
 
