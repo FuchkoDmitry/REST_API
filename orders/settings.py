@@ -184,29 +184,30 @@ REST_FRAMEWORK = {
     }
 }
 
-SOCIAL_AUTH_VK_OAUTH2_KEY = '51470208'
-SOCIAL_AUTH_VK_OAUTH2_SECRET = '9VnOs8rgyGGYLxcgzW2d'
-SOCIAL_AUTH_VK_OAUTH2_SCOPE = ['email']
-SOCIAL_AUTH_VK_PROFILE_EXTRA_PARAMS = {
-    'fields': 'email, username'
-}
+SOCIAL_AUTH_VK_OAUTH2_KEY = config('VK_APP_ID')
+SOCIAL_AUTH_VK_OAUTH2_SECRET = config('VK_APP_SECRET')
 
-SOCIAL_AUTH_FACEBOOK_KEY = '1273429533225470'
-SOCIAL_AUTH_FACEBOOK_SECRET = '68faad8ba66472ef8a6af84a9c378aa0'
 
-SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
-SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
-    'fields': 'id, name, email'
-}
+SOCIAL_AUTH_VK_OAUTH2_EXTRA_DATA = ['email']
+SOCIAL_AUTH_USER_FIELDS = ['username', 'email', 'first_name', 'last_name']
+
+
+# SOCIAL_AUTH_FACEBOOK_KEY = config('FACEBOOK_APP_ID')
+# SOCIAL_AUTH_FACEBOOK_SECRET = config('FACEBOOK_APP_SECRET')
+# SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+# SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+#     'fields': 'id, name, email'
+# }
+
+SOCIAL_AUTH_JSONFIELD_ENABLED = True
 
 AUTHENTICATION_BACKENDS = (
-    'social_core.backends.facebook.FacebookAppOAuth2',
-    'social_core.backends.facebook.FacebookOAuth2',
+    # 'social_core.backends.facebook.FacebookAppOAuth2',
+    # 'social_core.backends.facebook.FacebookOAuth2',
     "social_core.backends.vk.VKOAuth2",
     'drf_social_oauth2.backends.DjangoOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 )
-
 
 CELERY_BROKER_URL = config('CELERY_BROKER')
 CELERY_RESULT_BACKEND = config('CELERY_BACKEND')
