@@ -27,7 +27,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/user/', include('users.urls')),
     path('api/v1/', include('shop.urls')),
-    path('auth/', include('allauth.urls')),
+    path('accounts/', include('allauth.urls')),
     path('rest-auth/vk/login/', VkLogin.as_view())
     # path('rest-auth/', include('rest_auth.urls'))
 ]

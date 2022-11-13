@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'shop.apps.ShopConfig',
     'rest_framework',
     'rest_framework.authtoken',
-    'dj_rest_auth',
+    # 'dj_rest_auth',
     'django_rest_passwordreset',
     'drf_yasg',
     # 'rest_auth',
@@ -57,42 +57,47 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.vk',
-    'allauth.socialaccount.providers.facebook',
-    'allauth.socialaccount.providers.github'
+    'allauth.socialaccount.providers.github',
+    'allauth.socialaccount.providers.mailru',
+    'allauth.socialaccount.providers.yandex'
 ]
 
 SITE_ID = 1
-# ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_UNIQUE_EMAIL = True
+# ACCOUNT_EMAIL_REQUIRED = True
+# ACCOUNT_USERNAME_REQUIRED = False
+# ACCOUNT_AUTHENTICATION_METHOD = 'email'
+# ACCOUNT_UNIQUE_EMAIL = True
+
+
 # ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 # SOCIALACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-SOCIALACCOUNT_AUTO_SIGNUP = True
-# ACCOUNT_LOGOUT_REDIRECT_URL = '/api/v1/products/'
-# ACCOUNT_LOGIN_REDIRECT_URL = 'http://localhost:8000'
-# ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 1000
-LOGIN_REDIRECT_URL = 'http://localhost:8000/api/v1/products/'
-# ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
-# ACCOUNT_EMAIL_CONFIRMATION_COOLDOWN = 1
-# ACCOUNT_CONFIRM_EMAIL_ON_GET = True
-# ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = reverse_lazy('account_confirm_complete')
-# ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = reverse_lazy('account_confirm_complete')
+# SOCIALACCOUNT_AUTO_SIGNUP = True
+LOGOUT_REDIRECT_URL = 'http://localhost:8000/accounts/login/'
+# LOGIN_REDIRECT_URL = 'http://127.0.0.1:8000/accounts/github/login/callback/'
+# SOCIALACCOUNT_LOGIN_REDIRECT_URL = 'http://localhost:8000/accounts/vk/login/callback/'
+ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 1000
+LOGIN_REDIRECT_URL = '/accounts/email/'
+ACCOUNT_EMAIL_CONFIRMATION_COOLDOWN = 1
+# SOCIALACCOUNT_LOGIN_ON_GET = True # вход без кнопки continue
 
-
-SOCIALACCOUNT_PROVIDERS = {
-    'vk': {
-        'APP': {
-            'client_id': '51470208',
-            'secret': '9VnOs8rgyGGYLxcgzW2d'
-        },
-        'SCOPE': [
-            'profile',
-            'email'
-        ]
-    }
-}
+# SOCIALACCOUNT_PROVIDERS = {
+#     'vk': {
+#         'APP': {
+#             'client_id': config('VK_APP_ID'),
+#             'secret': config('VK_APP_SECRET')
+#         },
+#         'SCOPE': [
+#             'profile',
+#             'email'
+#         ]
+#     },
+#     'github': {
+#         'APP': {
+#             'client_id': config('GITHUB_APP_ID'),
+#             'secret': config('GITHUB_APP_SECRET')
+#         }
+#     }
+# }
 
 
 MIDDLEWARE = [
