@@ -13,6 +13,7 @@
 * Менеджер закупок через API делает ежедневные закупки по каталогу, в котором представлены товары от нескольких поставщиков.
 * В одном заказе можно указать товары от разных поставщиков.
 * Пользователь может авторизироваться, регистрироваться и восстанавливать пароль через API.
+* Пользователь может авторизоваться через соц.сети(VK, Yandex, Mail.ru)
 
 ### Поставщик:
 
@@ -55,14 +56,20 @@
    + DJANGO_SUPERUSER_USERNAME=superusername
    + CELERY_BROKER=redis://redis:6379/0
    + CELERY_BACKEND=redis://redis:6379/1
+   + VK_APP_ID=<vk_app_id>
+   + VK_APP_SECRET=<vk_app_secret_key>
+   + MAIL_RU_APP_ID=<mailru_app_id>
+   + MAIL_RU_APP_SECRET=<mailru_app_secret>
+   + YANDEX_APP_ID=<yandex_app_id>
+   + YANDEX_APP_SECRET=<yandex_app_secret>
 * в корне проекта(на одном уровне с docker-compose.yaml ) `docker-compose up --build`
 ---
 ### ***Документация*** <http://localhost/swagger/>
 
 ---
 ### ***Примеры запросов в Postman***
-[![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/5ebc7d23f80fb0a15f2c?action=collection%2Fimport)
 
+[![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/9a16aad5431624491f22?action=collection%2Fimport)
 ---
 
 ### ***Фунциональность:***
@@ -78,6 +85,21 @@
 * #### ***Личный кабинет***
 Есть личный кабинет, где можно посмотреть и изменить пероснальные данные, а также посмотреть, указанные адреса доставок.
 Можно изменить, удалить и добавить  новый адрес доставки.
+* #### ***Авторизация с помощью сторонних сервисов***
+    * **Установка**.
+Создать приложения: [VK](https://vk.com/editapp?act=create), [mail.ru](https://api.mail.ru/sites/my/add/), [Yandex](https://oauth.yandex.com/client/new).
+Внести client id и secret key приложений в .env файл.
+Создать приложение в admin панели django: Django Oauth Toolkit->Applications->Add application.
+User -> your_superuser, Client Type -> Public, Authorization grant type -> Client credentials
+Name -> whatever you'd like. 
+    * **Использование**. 
+Получить токены пользователем:
+       * oauth.vk.com/authorize?client_id=<vk_app_client_id>&display=page&redirect_uri=https://oauth.vk.com/blank.html&scope=email&response_type=token
+       * https://o2.mail.ru/login?client_id=postmaster_api_client&response_type=code&state=some_state&redirect_uri=https%3A%2F%2Fpostmaster.mail.ru%2Fext-api%2Foauth%2F
+       * https://oauth.yandex.ru/authorize?response_type=token&client_id=<yandex_app_client_id>.
+      
+Полученный токен обменивается на токен сервиса для выполнения запросов. 
+
 * #### ***Для клиента***
   * Магазины. Посмотреть все магазины представленные на сайте и посмотреть все товары представленные в конкретном магазине.
   * Категории. Посмотреть все категории продуктов представленных на сайте и все продукты в отдельно святой категории.

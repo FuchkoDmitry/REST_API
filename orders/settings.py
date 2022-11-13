@@ -195,13 +195,17 @@ SOCIAL_AUTH_USER_FIELDS = ['username', 'email', 'first_name', 'last_name']
 SOCIAL_AUTH_MAILRU_KEY = config('MAIL_RU_APP_ID')
 SOCIAL_AUTH_MAILRU_SECRET = config('MAIL_RU_APP_SECRET')
 
+SOCIAL_AUTH_YANDEX_KEY = config('YANDEX_APP_ID')
+SOCIAL_AUTH_YANDEX_SECRET = config('YANDEX_APP_SECRET')
+
 SOCIAL_AUTH_JSONFIELD_ENABLED = True
 
 AUTHENTICATION_BACKENDS = [
     "social_core.backends.vk.VKOAuth2",
     'drf_social_oauth2.backends.DjangoOAuth2',
     'django.contrib.auth.backends.ModelBackend',
-    'social_core.backends.mailru.MRGOAuth2'
+    'social_core.backends.mailru.MRGOAuth2',
+    'social_core.backends.yandex.YandexOAuth2'
 ]
 
 CELERY_BROKER_URL = config('CELERY_BROKER')

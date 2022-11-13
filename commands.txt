@@ -1,5 +1,0 @@
-ссылка для получения токена пользователем VK
-oauth.vk.com/authorize?client_id=<client_id>&display=page&redirect_uri=https://oauth.vk.com/blank.html&scope=email&response_type=token
-
-ссылка для получения токена пользователем mail.ru
-https://o2.mail.ru/login?client_id=postmaster_api_client&response_type=code&state=some_state&redirect_uri=https%3A%2F%2Fpostmaster.mail.ru%2Fext-api%2Foauth%2F
