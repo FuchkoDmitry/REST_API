@@ -190,7 +190,10 @@ SOCIAL_AUTH_VK_OAUTH2_SECRET = config('VK_APP_SECRET')
 
 SOCIAL_AUTH_VK_OAUTH2_EXTRA_DATA = ['email']
 SOCIAL_AUTH_USER_FIELDS = ['username', 'email', 'first_name', 'last_name']
-
+# SOCIAL_AUTH_MAILRU_EXTRA_DATA = ['nickname']
+# SOCIAL_AUTH_MAILRU_USER_FIELDS = ['username', 'email', 'first_name', 'last_name', 'nickname']
+SOCIAL_AUTH_MAILRU_KEY = config('MAIL_RU_APP_ID')
+SOCIAL_AUTH_MAILRU_SECRET = config('MAIL_RU_APP_SECRET')
 
 # SOCIAL_AUTH_FACEBOOK_KEY = config('FACEBOOK_APP_ID')
 # SOCIAL_AUTH_FACEBOOK_SECRET = config('FACEBOOK_APP_SECRET')
@@ -201,13 +204,14 @@ SOCIAL_AUTH_USER_FIELDS = ['username', 'email', 'first_name', 'last_name']
 
 SOCIAL_AUTH_JSONFIELD_ENABLED = True
 
-AUTHENTICATION_BACKENDS = (
+AUTHENTICATION_BACKENDS = [
     # 'social_core.backends.facebook.FacebookAppOAuth2',
     # 'social_core.backends.facebook.FacebookOAuth2',
     "social_core.backends.vk.VKOAuth2",
     'drf_social_oauth2.backends.DjangoOAuth2',
     'django.contrib.auth.backends.ModelBackend',
-)
+    'social_core.backends.mailru.MRGOAuth2'
+]
 
 CELERY_BROKER_URL = config('CELERY_BROKER')
 CELERY_RESULT_BACKEND = config('CELERY_BACKEND')

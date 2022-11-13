@@ -1,4 +1,4 @@
-import uuid
+
 
 from django.db import models
 from django.contrib.auth.base_user import BaseUserManager
@@ -14,8 +14,6 @@ USER_TYPE_CHOICES = (
     ('buyer', 'Покупатель'),
 )
 
-# Create your models here.
-
 
 class UserManager(BaseUserManager):
     """
@@ -25,22 +23,25 @@ class UserManager(BaseUserManager):
 
     def _create_user(self, email, password, **extra_fields):
         """
-        создание и сохранение пользователя по email и паролю
+        создание и сохранение пользователя по email и паролю.
+        Для авторизованных через VK генерируется почта и пароль.
+        При авторизации через mail.ru проверяется есть ли
+        пользователь с такой почтой, если нет, то создается
+        новый и генерируется пароль, иначе возвращается существующий.
+        Поменять почту через лк (PATCH http://localhost/api/v1/user/profile/).
+        Поменять пароль (POST http://localhost/api/v1/user/reset-password/)
         """
-        if not email:
-            '''
-            Для авторизованных через VK генерируется почта и пароль.
-            Поменять почту через лк (PATCH http://localhost/api/v1/user/profile/).
-            Поменять пароль (POST http://localhost/api/v1/user/reset-password/)
-            '''
+        if email and not password:
+            user = User.objects.filter(email=email).first()
+            if user:
+                return user
+            password = self.make_random_password()
+        elif not email:
             email = f'{extra_fields["username"]}@mail.ru'
-            password = str(uuid.uuid4())
-            user = self.model(email=email, **extra_fields)
-            user.set_password(password)
-            user.save(using=self._db)
-            return user
+            password = self.make_random_password()
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
+
         user.set_password(password)
         user.save(using=self._db)
         return user
