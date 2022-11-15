@@ -172,10 +172,11 @@ REST_FRAMEWORK = {
         'user_sustained': '10000/day',
         'anon_burst': '10/min',
         'anon_sustained': '1000/day'
-    }
+    },
+    'TEST_REQUEST_DEFAAULT_FORMAT': 'json'
 }
 
-CELERY_BROKER_URL = config('CELERY_BROKER')
-CELERY_RESULT_BACKEND = config('CELERY_BACKEND')
+CELERY_BROKER_URL = config('CELERY_BROKER', default='redis://localhost:6379')
+CELERY_RESULT_BACKEND = config('CELERY_BACKEND', default='redis://localhost:6379')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'

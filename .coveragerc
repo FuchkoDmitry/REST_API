@@ -1,0 +1,21 @@
+[run]
+
+omit=
+    orders/*
+    manage.py
+    *models*
+    *__init__*
+    *tests*
+    *urls*
+    *admin*
+    *apps*
+    *settings*
+    *wsgi.py*
+    *asgi.py*
+    *migrations*
+    *tasks*
+    *serializers*
+    *signals*
+    *permissions*
+    *mixins*
+    throttling/*

@@ -14,9 +14,9 @@ router.register('shops', ShopsViewSet, basename='shops')
 
 urlpatterns = [
     path('partner/update/', ImportProductsView.as_view()),
-    path('partner/status/<int:pk>/', GetOrUpdateStatus.as_view()),
+    path('partner/status/<int:pk>/', GetOrUpdateStatus.as_view(), name='partner-details'),
     path('partner/orders/', GetPartnerOrders.as_view()),
-    path('products/', ProductsView.as_view()),
+    path('products/', ProductsView.as_view(), name='products-list'),
     path('products/<int:pk>/', ProductView.as_view(), name='product-detail'),
     path('basket/', BasketView.as_view()),
     path('basket/confirm/', ConfirmOrderView.as_view()),
