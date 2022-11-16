@@ -58,7 +58,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         password = validated_data.pop('password')
         contacts = validated_data.pop('contacts', {})
 
-        user = User(**validated_data)
+        user = User(is_active=False, **validated_data)
         user.set_password(password)
         user.save()
         UserInfo.objects.create(user=user, **contacts)

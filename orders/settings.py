@@ -13,6 +13,7 @@ import os
 
 from pathlib import Path
 
+import social_core.backends.vk
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -48,7 +49,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'django_rest_passwordreset',
-    'drf_yasg'
+    'drf_yasg',
+
+    'drf_social_oauth2',
+    'oauth2_provider',
+    'social_django',
 ]
 
 MIDDLEWARE = [
@@ -74,6 +79,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -155,6 +162,8 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+        'drf_social_oauth2.authentication.SocialAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 40,
@@ -177,3 +186,27 @@ CELERY_BROKER_URL = config('CELERY_BROKER', default='redis://127.0.0.1:6379')
 CELERY_RESULT_BACKEND = config('CELERY_BACKEND', default='redis://127.0.0.1:6379')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
+
+SOCIAL_AUTH_VK_OAUTH2_KEY = config('VK_APP_ID')
+SOCIAL_AUTH_VK_OAUTH2_SECRET = config('VK_APP_SECRET')
+
+
+SOCIAL_AUTH_VK_OAUTH2_EXTRA_DATA = ['email']
+SOCIAL_AUTH_USER_FIELDS = ['username', 'email', 'first_name', 'last_name']
+
+
+SOCIAL_AUTH_MAILRU_KEY = config('MAIL_RU_APP_ID')
+SOCIAL_AUTH_MAILRU_SECRET = config('MAIL_RU_APP_SECRET')
+
+SOCIAL_AUTH_YANDEX_KEY = config('YANDEX_APP_ID')
+SOCIAL_AUTH_YANDEX_SECRET = config('YANDEX_APP_SECRET')
+
+SOCIAL_AUTH_JSONFIELD_ENABLED = True
+
+AUTHENTICATION_BACKENDS = [
+    "social_core.backends.vk.VKOAuth2",
+    'drf_social_oauth2.backends.DjangoOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+    'social_core.backends.mailru.MRGOAuth2',
+    'social_core.backends.yandex.YandexOAuth2'
+]

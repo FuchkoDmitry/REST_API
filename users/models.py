@@ -1,3 +1,5 @@
+
+
 from django.db import models
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
@@ -19,19 +21,32 @@ class UserManager(BaseUserManager):
     """
     use_in_migrations = True
 
-    def _create_user(self, email, password, contacts=None, **extra_fields):
+    def _create_user(self, email, password, **extra_fields):
         """
-        создание и сохранение пользователя по email и паролю
+        создание и сохранение пользователя по email и паролю.
+        Для авторизованных через VK генерируется почта и пароль.
+        При авторизации через mail.ru проверяется есть ли
+        пользователь с такой почтой, если нет, то создается
+        новый и генерируется пароль, иначе возвращается существующий.
+        Поменять почту через лк (PATCH http://localhost/api/v1/user/profile/).
+        Поменять пароль (POST http://localhost/api/v1/user/reset-password/)
         """
-        if not email:
-            raise ValueError('Вы не ввели поле email')
+        if email and not password:
+            user = User.objects.filter(email=email).first()
+            if user:
+                return user
+            password = self.make_random_password()
+        elif not email:
+            email = f'{extra_fields["username"]}@mail.ru'
+            password = self.make_random_password()
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
+
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_user(self, email, password, **extra_fields):
+    def create_user(self, email, password='', **extra_fields):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
 
@@ -85,7 +100,7 @@ class User(AbstractUser):
     )
     is_active = models.BooleanField(
         _("active"),
-        default=False,
+        default=True,
         help_text=_(
             'Designates whether this user should be treated as active.'
             'Unselect this instead of deleting accounts'
