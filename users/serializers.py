@@ -151,5 +151,3 @@ class UserProfileViewSerializer(serializers.ModelSerializer):
         if contacts:
             UserInfo.objects.update_or_create(user=instance, defaults=contacts)
         return instance
-
-

@@ -26,7 +26,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
 DEBUG = config('DEBUG', cast=bool)
 
 ALLOWED_HOSTS = ['*']
@@ -120,11 +119,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
-# LANGUAGE_CODE = 'en-us'
 LANGUAGE_CODE = 'ru'
 
 TIME_ZONE = 'UTC'
-# TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -173,10 +170,10 @@ REST_FRAMEWORK = {
         'anon_burst': '10/min',
         'anon_sustained': '1000/day'
     },
-    'TEST_REQUEST_DEFAAULT_FORMAT': 'json'
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json'
 }
 
-CELERY_BROKER_URL = config('CELERY_BROKER', default='redis://localhost:6379')
-CELERY_RESULT_BACKEND = config('CELERY_BACKEND', default='redis://localhost:6379')
+CELERY_BROKER_URL = config('CELERY_BROKER', default='redis://127.0.0.1:6379')
+CELERY_RESULT_BACKEND = config('CELERY_BACKEND', default='redis://127.0.0.1:6379')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'

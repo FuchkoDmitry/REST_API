@@ -1,10 +1,7 @@
 
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
-from django.utils.translation import gettext_lazy as _
 
 from shop.models import Shop, Category, Product, ProductInfo, ProductParameter, Order, OrderItem
-from users.models import UserInfo
 from users.serializers import UserContactsViewSerializer
 
 
@@ -21,9 +18,6 @@ class ShopsViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shop
         fields = ('id', 'name', 'site', 'is_open')
-
-
-
 
 
 class CategoriesViewSerializer(serializers.ModelSerializer):
@@ -65,7 +59,6 @@ class ProductInfoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductInfo
-        # id сделать гиперссылкой на детали о товаре
         fields = ('id', 'product', 'model', 'shop', 'article', 'price', 'quantity', 'parameters')
 
 
@@ -114,7 +107,6 @@ class OrderedItemsSerializer(serializers.ModelSerializer):
 class BasketSerializer(serializers.ModelSerializer):
     '''Сериализатор товаров в корзине'''
 
-    # contacts = UserContactsViewSerializer(required=False, allow_null=True, write_only=True)
     contacts = UserContactsViewSerializer(required=False, allow_null=True)
     ordered_items = OrderedItemsSerializer(many=True, read_only=True)
     total_price = serializers.IntegerField(read_only=True)
@@ -200,7 +192,6 @@ class OrdersSerializer(serializers.ModelSerializer):
     contacts = serializers.StringRelatedField()
     user = serializers.StringRelatedField()
     ordered_items = serializers.StringRelatedField(many=True)
-
 
     class Meta:
         model = Order

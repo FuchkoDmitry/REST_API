@@ -17,8 +17,6 @@ class CategoryAdmin(admin.ModelAdmin):
     list_display = ['id', 'name']
 
 
-
-
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'rrc', 'category']
@@ -52,11 +50,9 @@ class OrderItemInline(admin.TabularInline):
 class OrderAdmin(admin.ModelAdmin):
     list_display = ['id', 'user', 'contacts', 'created_at', 'status']
     list_filter = ['created_at', 'status', 'user']
-    # filter_horizontal = ['user', 'status', 'created_at']
     list_editable = ['status']
     fields = (('user', 'contacts'), ('created_at', 'updated_at'), 'status')
     readonly_fields = ('created_at', 'updated_at')
-    # list_display_links = []
     inlines = [OrderItemInline]
 
     def save_model(self, request, obj, form, change):
@@ -77,6 +73,3 @@ class OrderAdmin(admin.ModelAdmin):
                         return HttpResponseRedirect('')
         change_status_email_task.delay(obj.user.id, obj.id, obj.get_status_display())
         return super().save_model(request, obj, form, change)
-
-
-

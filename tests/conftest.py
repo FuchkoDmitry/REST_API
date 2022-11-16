@@ -4,8 +4,6 @@ from model_bakery import baker
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 
-from users.models import User
-
 
 @pytest.fixture
 def client():
@@ -32,7 +30,3 @@ def get_token(db, create_user):
     user = create_user
     token, _ = Token.objects.get_or_create(user=user)
     return token
-
-
-
-

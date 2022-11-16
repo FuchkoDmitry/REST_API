@@ -1,7 +1,7 @@
 
 from django.http import JsonResponse
-from rest_framework import status, mixins
-from rest_framework.generics import CreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework import status
+from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -10,15 +10,16 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.exceptions import MethodNotAllowed
 
 from users.models import User, ConfirmEmailToken, UserInfo
-from users.permissions import IsOwnerOrReadOnly, IsOwner
+from users.permissions import IsOwner
 from users.serializers import (
     UserRegisterSerializer, UserLoginSerializer,
     ResetPasswordConfirmSerializer, UserProfileViewSerializer,
     UserContactsViewSerializer
 )
-from users.signals import new_user_registered, account_confirmed, reset_password, reset_password_confirmed
-from users.tasks import user_register_email_task, account_confirmed_email_task, reset_password_email_task, \
-    reset_password_confirmed_email_task
+from users.tasks import (
+    user_register_email_task, account_confirmed_email_task,
+    reset_password_email_task, reset_password_confirmed_email_task
+)
 
 
 class RegisterUserView(CreateAPIView):
@@ -179,7 +180,6 @@ class UserContactsViewSet(ModelViewSet):
     queryset = UserInfo.objects.all()
     serializer_class = UserContactsViewSerializer
     permission_classes = [IsAuthenticated, IsOwner]
-
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

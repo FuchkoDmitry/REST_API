@@ -3,11 +3,9 @@ from requests import get
 from requests.exceptions import ConnectionError
 import yaml
 from rest_framework.filters import SearchFilter
-from rest_framework.viewsets import ModelViewSet
 from yaml.scanner import ScannerError
 from rest_framework import status
-from rest_framework.generics import get_object_or_404, ListAPIView, RetrieveAPIView, UpdateAPIView, \
-    RetrieveUpdateAPIView
+from rest_framework.generics import get_object_or_404, ListAPIView, RetrieveAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -17,15 +15,14 @@ from urllib3.exceptions import MaxRetryError, NewConnectionError
 from yaml.loader import SafeLoader
 from django_filters.rest_framework import DjangoFilterBackend
 
-from shop.models import Shop, Category, Product, ProductInfo, Parameter, ProductParameter, Order, OrderItem
+from shop.models import Shop, Category, Product, Order
 from shop.permissions import IsShop, IsBuyer
 from shop.serializers import (
     URLSerializer, ShopsViewSerializer, CategoriesViewSerializer,
     CategoryItemsViewSerializer, ProductSerializer, ShopItemsViewSerializer,
-    ProductInfoSerializer, ProductsViewSerializer, BasketSerializer,
-    OrderedItemsSerializer, OrderDetailsSerializer, OrdersSerializer
+    ProductsViewSerializer, BasketSerializer, OrderDetailsSerializer, OrdersSerializer
 )
-from shop.signals import order_confirmed
+
 from shop.mixins import MyPaginationMixin
 from shop.tasks import new_order_email_task, new_order_email_to_admin_task, do_import_task
 from users.models import UserInfo
@@ -219,7 +216,6 @@ class ConfirmOrderView(APIView):
     новых контактов.
     '''
     permission_classes = [IsAuthenticated, IsBuyer]
-
 
     def post(self, request):
         contacts = request.data

@@ -1,11 +1,8 @@
-import random
 
 import pytest
 from django.urls import reverse
-from rest_framework.status import (
-    HTTP_200_OK, HTTP_201_CREATED,
-    HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
-)
+from rest_framework.status import HTTP_200_OK
+
 
 from shop.models import Shop, Product, ProductInfo
 
@@ -83,6 +80,3 @@ def test_partner_change_state(client, model_factory, get_token, role, status, au
 
     assert response.status_code == status
     assert response_json.get('is_open', shop.is_open) == is_open
-
-
-

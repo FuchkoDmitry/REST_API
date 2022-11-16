@@ -1,15 +1,12 @@
 from django.contrib import admin
 
-# Register your models here.
-from users.models import User, ConfirmEmailToken, UserInfo
+from users.models import User, UserInfo
 
 
 class UserInfoInline(admin.TabularInline):
     model = UserInfo
     extra = 1
     readonly_fields = ["user", "city", "street", "house", "apartment", "phone"]
-
-
 
 
 @admin.register(User)

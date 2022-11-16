@@ -3,8 +3,6 @@ from django.urls import reverse
 from rest_framework.status import HTTP_200_OK, HTTP_401_UNAUTHORIZED, HTTP_201_CREATED
 from rest_framework.authtoken.models import Token
 
-from users.models import User
-
 
 @pytest.mark.django_db
 def test_user_registration(client, django_user_model):
@@ -65,4 +63,18 @@ def test_required_fields(client, create_user):
     assert 'token' not in response.json()
 
 
+@pytest.mark.django_db
+def test_logout(client, get_token):
+
+    user_token = get_token
+    url = reverse('user-logout')
+    token_count = Token.objects.count()
+
+    client.credentials(HTTP_AUTHORIZATION='Token ' + user_token.key)
+    response = client.post(url)
+    token_count_after_user_logout = Token.objects.count()
+
+    assert response.status_code == HTTP_200_OK
+    assert token_count_after_user_logout == token_count - 1
+    assert user_token.key not in Token.objects.all()
 
