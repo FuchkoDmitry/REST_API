@@ -49,10 +49,8 @@ INSTALLED_APPS = [
     'shop.apps.ShopConfig',
     'rest_framework',
     'rest_framework.authtoken',
-    # 'dj_rest_auth',
     'django_rest_passwordreset',
     'drf_yasg',
-    # 'rest_auth',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -63,41 +61,10 @@ INSTALLED_APPS = [
 ]
 
 SITE_ID = 1
-# ACCOUNT_EMAIL_REQUIRED = True
-# ACCOUNT_USERNAME_REQUIRED = False
-# ACCOUNT_AUTHENTICATION_METHOD = 'email'
-# ACCOUNT_UNIQUE_EMAIL = True
 
+LOGOUT_REDIRECT_URL = '/accounts/login/'
 
-# ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-# SOCIALACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-# SOCIALACCOUNT_AUTO_SIGNUP = True
-LOGOUT_REDIRECT_URL = 'http://localhost:8000/accounts/login/'
-# LOGIN_REDIRECT_URL = 'http://127.0.0.1:8000/accounts/github/login/callback/'
-# SOCIALACCOUNT_LOGIN_REDIRECT_URL = 'http://localhost:8000/accounts/vk/login/callback/'
-ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 1000
 LOGIN_REDIRECT_URL = '/accounts/email/'
-ACCOUNT_EMAIL_CONFIRMATION_COOLDOWN = 1
-# SOCIALACCOUNT_LOGIN_ON_GET = True # вход без кнопки continue
-
-# SOCIALACCOUNT_PROVIDERS = {
-#     'vk': {
-#         'APP': {
-#             'client_id': config('VK_APP_ID'),
-#             'secret': config('VK_APP_SECRET')
-#         },
-#         'SCOPE': [
-#             'profile',
-#             'email'
-#         ]
-#     },
-#     'github': {
-#         'APP': {
-#             'client_id': config('GITHUB_APP_ID'),
-#             'secret': config('GITHUB_APP_SECRET')
-#         }
-#     }
-# }
 
 
 MIDDLEWARE = [
@@ -172,11 +139,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
-# LANGUAGE_CODE = 'en-us'
 LANGUAGE_CODE = 'ru'
 
 TIME_ZONE = 'UTC'
-# TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -187,9 +152,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 STATIC_URL = '/static/'
 STATIC_ROOT = '/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-
-
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -199,7 +161,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.User'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = config('EMAIL_HOST')
 EMAIL_PORT = config('EMAIL_PORT', cast=int)
 EMAIL_HOST_USER = config('EMAIL')
@@ -228,7 +189,7 @@ REST_FRAMEWORK = {
     }
 }
 
-CELERY_BROKER_URL = config('CELERY_BROKER')
-CELERY_RESULT_BACKEND = config('CELERY_BACKEND')
+CELERY_BROKER_URL = config('CELERY_BROKER', default='redis://127.0.0.1:6379')
+CELERY_RESULT_BACKEND = config('CELERY_BACKEND', default='redis://127.0.0.1:6379')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
