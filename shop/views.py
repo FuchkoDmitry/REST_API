@@ -1,4 +1,5 @@
 from django.db.models import Sum, F
+from drf_yasg import openapi
 from requests import get
 from requests.exceptions import ConnectionError
 import yaml
@@ -14,6 +15,7 @@ from rest_framework.settings import api_settings
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 from yaml.loader import SafeLoader
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_yasg.utils import swagger_auto_schema
 
 from shop.models import Shop, Category, Product, Order
 from shop.permissions import IsShop, IsBuyer
@@ -155,6 +157,19 @@ class BasketView(APIView):
         serializer = BasketSerializer(basket)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'items': openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(
+                    type=openapi.TYPE_OBJECT, properties={
+                        'product': openapi.Schema(type=openapi.TYPE_NUMBER, description='positive integer'),
+                        'quantity': openapi.Schema(type=openapi.TYPE_NUMBER, description='positive integer')
+                    }),
+                description='items'),
+        }
+    ))
     def post(self, request):
         '''
         Добавить товары в корзину, внести изменения в корзину.
@@ -176,6 +191,19 @@ class BasketView(APIView):
         return Response({"items": 'Товары добавлены в корзину'},
                         status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'items': openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(
+                    type=openapi.TYPE_OBJECT, properties={
+                        'product': openapi.Schema(type=openapi.TYPE_NUMBER, description='positive integer'),
+                        'quantity': openapi.Schema(type=openapi.TYPE_NUMBER, description='positive integer')
+                    }),
+                description='items'),
+        }
+    ))
     def put(self, request):
         '''
         Обновить товары в корзине.

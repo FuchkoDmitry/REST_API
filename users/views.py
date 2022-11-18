@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.exceptions import MethodNotAllowed
+from drf_yasg.utils import swagger_auto_schema
 
 from users.models import User, ConfirmEmailToken, UserInfo
 from users.permissions import IsOwner
@@ -74,11 +75,12 @@ class ConfirmAccountView(APIView):
 
 class LoginView(APIView):
     """
-    Логин пользователя в сервисе и получение
+    Аутентификация пользователя в сервисе и получение
     им токена для выполнения запросов к API
     """
     serializer_class = UserLoginSerializer
 
+    @swagger_auto_schema(request_body=UserLoginSerializer)
     def post(self, request):
 
         serializer = UserLoginSerializer(data=request.data)
@@ -154,7 +156,7 @@ class UserProfileView(APIView):
     При изменении пароля токен удаляется и пользователю
     необходимо выполнить вход с новым паролем.
     '''
-    permission_classes = [IsOwner]
+    permission_classes = [IsAuthenticated, IsOwner]
     serializer_class = UserProfileViewSerializer
 
     def get(self, request):
@@ -162,6 +164,7 @@ class UserProfileView(APIView):
         serializer = self.serializer_class(instance=user)
         return Response(serializer.data)
 
+    @swagger_auto_schema(request_body=UserProfileViewSerializer)
     def patch(self, request):
         serializer = self.serializer_class(instance=request.user, data=request.data, partial=True)
         if serializer.is_valid():

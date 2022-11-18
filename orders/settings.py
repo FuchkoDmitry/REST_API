@@ -19,7 +19,6 @@ from decouple import config
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
@@ -31,11 +30,9 @@ DEBUG = config('DEBUG', cast=bool)
 
 ALLOWED_HOSTS = ['*']
 
-
 # Application definition
 
 INSTALLED_APPS = [
-
 
     'django_filters',
     'django.contrib.admin',
@@ -88,7 +85,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'orders.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
@@ -102,7 +98,6 @@ DATABASES = {
         'PASSWORD': config('POSTGRES_PASSWORD')
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -122,7 +117,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
@@ -134,13 +128,11 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 STATIC_URL = '/static/'
 STATIC_ROOT = '/static/'
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-
 
 
 # Default primary key field type
@@ -157,7 +149,6 @@ EMAIL_HOST_USER = config('EMAIL')
 EMAIL_HOST_PASSWORD = config('EMAIL_PASSWORD')
 EMAIL_USE_SSL = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -190,10 +181,8 @@ CELERY_TASK_SERIALIZER = 'json'
 SOCIAL_AUTH_VK_OAUTH2_KEY = config('VK_APP_ID')
 SOCIAL_AUTH_VK_OAUTH2_SECRET = config('VK_APP_SECRET')
 
-
 SOCIAL_AUTH_VK_OAUTH2_EXTRA_DATA = ['email']
-SOCIAL_AUTH_USER_FIELDS = ['username', 'email', 'first_name', 'last_name']
-
+SOCIAL_AUTH_USER_FIELDS = ['username', 'email', 'first_name', 'last_name', 'backend']
 
 SOCIAL_AUTH_MAILRU_KEY = config('MAIL_RU_APP_ID')
 SOCIAL_AUTH_MAILRU_SECRET = config('MAIL_RU_APP_SECRET')
@@ -210,3 +199,17 @@ AUTHENTICATION_BACKENDS = [
     'social_core.backends.mailru.MRGOAuth2',
     'social_core.backends.yandex.YandexOAuth2'
 ]
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        },
+        'Token': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'},
+    }
+}
