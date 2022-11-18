@@ -211,5 +211,6 @@ SWAGGER_SETTINGS = {
             'type': 'apiKey',
             'name': 'Authorization',
             'in': 'header'},
-    }
+    },
+    'DEFAULT_AUTO_SCHEMA_CLASS': 'orders.swagger_read_write_schema.ReadWriteAutoSchema',
 }

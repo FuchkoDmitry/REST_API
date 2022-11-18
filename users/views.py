@@ -1,5 +1,7 @@
+from typing import Union
 
 from django.http import JsonResponse
+from drf_yasg import openapi
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -50,6 +52,15 @@ class RegisterUserView(CreateAPIView):
 
 class ConfirmAccountView(APIView):
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "email": openapi.Schema(type=openapi.FORMAT_EMAIL, description='user email'),
+            "token": openapi.Schema(type=openapi.TYPE_STRING, description="token from email")
+        },
+        required=['email', 'token']
+    ), responses={200: "Вы подтвердили учетную запись.",
+                  400: "Вы указали некорректные данные."})
     def post(self, request):
         """
         Подтверждение аккаунта пользователя, активация профиля
@@ -80,7 +91,7 @@ class LoginView(APIView):
     """
     serializer_class = UserLoginSerializer
 
-    @swagger_auto_schema(request_body=UserLoginSerializer)
+    @swagger_auto_schema(request_body=UserLoginSerializer, responses={200: UserLoginSerializer()})
     def post(self, request):
 
         serializer = UserLoginSerializer(data=request.data)
@@ -99,6 +110,7 @@ class LoginView(APIView):
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(responses={200: "Вы успешно вышли из системы"})
     def post(self, request):
         user = request.user
         user_token = Token.objects.get(user=user)
@@ -110,6 +122,17 @@ class LogoutView(APIView):
 
 class ResetPasswordView(APIView):
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'email': openapi.Schema(type=openapi.FORMAT_EMAIL)
+        },
+        required=['email']
+    ), responses={
+        200: 'Вам на почту отправлено письмо с инструцией по смене пароля',
+        400: 'Пользователя с данным email не существует'
+        }
+    )
     def post(self, request):
         email = request.data.get('email')
         if email is None:
@@ -135,6 +158,11 @@ class ResetPasswordConfirmView(APIView):
 
     serializer_class = ResetPasswordConfirmSerializer
 
+    @swagger_auto_schema(
+        request_body=ResetPasswordConfirmSerializer,
+        responses={200: "Пароль успешно обновлен",
+                   400: "Некорректные токен и/или email // Пароли не совпадают."}
+    )
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
@@ -159,12 +187,13 @@ class UserProfileView(APIView):
     permission_classes = [IsAuthenticated, IsOwner]
     serializer_class = UserProfileViewSerializer
 
+    # @swagger_auto_schema(responses={200: UserProfileViewSerializer(many=True, read_only=True)})
     def get(self, request):
         user = request.user
         serializer = self.serializer_class(instance=user)
         return Response(serializer.data)
 
-    @swagger_auto_schema(request_body=UserProfileViewSerializer)
+    # @swagger_auto_schema(request_body=UserProfileViewSerializer)
     def patch(self, request):
         serializer = self.serializer_class(instance=request.user, data=request.data, partial=True)
         if serializer.is_valid():
@@ -190,5 +219,6 @@ class UserContactsViewSet(ModelViewSet):
     def perform_update(self, serializer):
         serializer.save(user=self.request.user)
 
+    @swagger_auto_schema(auto_schema=None)
     def list(self, request, *args, **kwargs):
         raise MethodNotAllowed(request.method)

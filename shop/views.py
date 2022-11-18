@@ -1,3 +1,5 @@
+from typing import Union
+
 from django.db.models import Sum, F
 from drf_yasg import openapi
 from requests import get
@@ -143,6 +145,7 @@ class BasketView(APIView):
 
     permission_classes = [IsAuthenticated, IsBuyer]
 
+    @swagger_auto_schema(responses={200: BasketSerializer(many=True)})
     def get(self, request):
 
         '''Просмотреть корзину'''
@@ -164,12 +167,12 @@ class BasketView(APIView):
                 type=openapi.TYPE_ARRAY,
                 items=openapi.Schema(
                     type=openapi.TYPE_OBJECT, properties={
-                        'product': openapi.Schema(type=openapi.TYPE_NUMBER, description='positive integer'),
-                        'quantity': openapi.Schema(type=openapi.TYPE_NUMBER, description='positive integer')
+                        'product': openapi.Schema(type=openapi.TYPE_NUMBER, description='product id'),
+                        'quantity': openapi.Schema(type=openapi.TYPE_NUMBER, description='product quantity')
                     }),
                 description='items'),
         }
-    ))
+    ), responses={200: 'Товары добавлены в корзину', 400: "Укажите товары для добавления"})
     def post(self, request):
         '''
         Добавить товары в корзину, внести изменения в корзину.
@@ -177,7 +180,7 @@ class BasketView(APIView):
 
         items = request.data.get('items')
         if not items:
-            return Response({'items': 'Укажите товары для добавления'},
+            return Response({'Укажите товары для добавления'},
                             status=status.HTTP_400_BAD_REQUEST)
         data = {
             'user': request.user,
@@ -188,7 +191,7 @@ class BasketView(APIView):
         if serializer.is_valid(raise_exception=True):
             serializer.save()
 
-        return Response({"items": 'Товары добавлены в корзину'},
+        return Response({'Товары добавлены в корзину'},
                         status=status.HTTP_200_OK)
 
     @swagger_auto_schema(request_body=openapi.Schema(
@@ -203,7 +206,7 @@ class BasketView(APIView):
                     }),
                 description='items'),
         }
-    ))
+    ), responses={200: 'Товары добавлены в корзину', 400: "Укажите товары для добавления"})
     def put(self, request):
         '''
         Обновить товары в корзине.
@@ -245,6 +248,9 @@ class ConfirmOrderView(APIView):
     '''
     permission_classes = [IsAuthenticated, IsBuyer]
 
+    @swagger_auto_schema(request_body=UserContactsViewSerializer,
+                         responses={201: "Спасибо за заказ. На вашу почту отправлено письмо с деталями",
+                                    400: "Необходимо передать контаты для доставки"})
     def post(self, request):
         contacts = request.data
         contacts_id = contacts.pop('id', 0)

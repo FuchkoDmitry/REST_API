@@ -68,7 +68,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 class UserLoginSerializer(serializers.Serializer):
     token = serializers.CharField(read_only=True)
     username = serializers.CharField(max_length=50)
-    password = serializers.CharField(max_length=128, write_only=True)
+    password = serializers.CharField(max_length=128, write_only=True, required=True)
     email = serializers.CharField(read_only=True)
 
     def validate(self, attrs):
@@ -120,13 +120,15 @@ class ResetPasswordConfirmSerializer(serializers.Serializer): # noqa
 
 class UserProfileViewSerializer(serializers.ModelSerializer):
     contacts = UserContactsViewSerializer(required=False, read_only=True, many=True)
+    # password = serializers.CharField(max_length=128, write_only=True, required=False)
 
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'first_name', 'last_name',
                   'company', 'position', 'role', 'password', 'contacts')
         extra_kwargs = {
-            'password': {'write_only': True}}
+            'password': {'write_only': True}
+        }
 
     def validate(self, attrs):
         password = attrs.get('password', False)
