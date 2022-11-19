@@ -1,6 +1,6 @@
-from typing import Union
 
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from drf_yasg import openapi
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
@@ -11,7 +11,6 @@ from rest_framework.authtoken.models import Token
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.exceptions import MethodNotAllowed
 from drf_yasg.utils import swagger_auto_schema
-
 from users.models import User, ConfirmEmailToken, UserInfo
 from users.permissions import IsOwner
 from users.serializers import (
@@ -187,13 +186,20 @@ class UserProfileView(APIView):
     permission_classes = [IsAuthenticated, IsOwner]
     serializer_class = UserProfileViewSerializer
 
-    # @swagger_auto_schema(responses={200: UserProfileViewSerializer(many=True, read_only=True)})
+    @swagger_auto_schema(
+        operation_description='Просмотр профиля пользователя',
+        responses={200: openapi.Response(description='Профиль пользователя',
+                                         schema=UserProfileViewSerializer(read_only=True)
+                                         )
+                   }
+    )
     def get(self, request):
         user = request.user
         serializer = self.serializer_class(instance=user)
         return Response(serializer.data)
 
-    # @swagger_auto_schema(request_body=UserProfileViewSerializer)
+    @swagger_auto_schema(operation_description='Изменить данные профиля пользователя',
+                         request_body=UserProfileViewSerializer)
     def patch(self, request):
         serializer = self.serializer_class(instance=request.user, data=request.data, partial=True)
         if serializer.is_valid():
@@ -204,6 +210,16 @@ class UserProfileView(APIView):
                         status=status.HTTP_400_BAD_REQUEST)
 
 
+@method_decorator(name='create', decorator=swagger_auto_schema(
+    operation_description='Создать новые контакты'))
+@method_decorator(name='retrieve', decorator=swagger_auto_schema(
+    operation_description='Получить контакты по id'))
+@method_decorator(name='update', decorator=swagger_auto_schema(
+    operation_description='обновить(полностью) контакты'))
+@method_decorator(name='partial_update', decorator=swagger_auto_schema(
+    operation_description='обновить(частично) контакты'))
+@method_decorator(name='destroy', decorator=swagger_auto_schema(
+    operation_description='удалить контакты по id'))
 class UserContactsViewSet(ModelViewSet):
     """
     Создать, получить, изменить(частично или полностью)

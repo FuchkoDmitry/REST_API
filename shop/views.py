@@ -1,6 +1,6 @@
-from typing import Union
 
 from django.db.models import Sum, F
+from django.utils.decorators import method_decorator
 from drf_yasg import openapi
 from requests import get
 from requests.exceptions import ConnectionError
@@ -46,6 +46,15 @@ class ImportProductsView(APIView):
     permission_classes = (IsAuthenticated, IsShop)
     serializer_class = URLSerializer
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT, properties={
+            'url': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                title='Путь к .yaml файлу',
+                default='https://raw.githubusercontent.com/FuchkoDmitry/REST_API/master/data/shop1.yaml')
+        }
+    ), responses={200: 'Данные загружены', 400: 'некорректный yaml файл | Введите корректный url'},
+        operation_description='Загрузка прайс-листа магазина. В post-запросе передается url с путем к yaml-файлу')
     def post(self, request):
         serializer = URLSerializer(data=request.data)
         if not serializer.is_valid():
@@ -71,6 +80,12 @@ class ImportProductsView(APIView):
         return Response({'status': 'Данные загружены'}, status=status.HTTP_200_OK)
 
 
+@method_decorator(name='get', decorator=swagger_auto_schema(
+    operation_description='Информация о статусе получения заказов'))
+@method_decorator(name='put', decorator=swagger_auto_schema(
+    operation_description='обновить(полностью) информацию о магазине'))
+@method_decorator(name='patch', decorator=swagger_auto_schema(
+    operation_description='обновить(частично) информацию о магазине'))
 class GetOrUpdateStatus(RetrieveUpdateAPIView):
     '''Получить или изменить статус получения заказов'''
     permission_classes = [IsAuthenticated, IsOwner]
@@ -91,6 +106,10 @@ class GetPartnerOrders(ListAPIView):
         return queryset
 
 
+@method_decorator(name='list', decorator=swagger_auto_schema(
+    operation_description='Список магазинов'))
+@method_decorator(name='retrieve', decorator=swagger_auto_schema(
+    operation_description='Список товаров из одного магазина'))
 class ShopsViewSet(ReadOnlyModelViewSet):
     '''Список магазинов и товары из одного магазина'''
 
@@ -105,6 +124,10 @@ class ShopsViewSet(ReadOnlyModelViewSet):
         return ShopsViewSerializer
 
 
+@method_decorator(name='retrieve', decorator=swagger_auto_schema(
+    operation_description='Товары, представленные в определенной категории'))
+@method_decorator(name='list', decorator=swagger_auto_schema(
+    operation_description='Список категорий'))
 class CategoriesViewSet(ReadOnlyModelViewSet):
     '''Список категорий и товары определенной категории'''
 
@@ -287,6 +310,7 @@ class GetOrders(APIView, MyPaginationMixin):
     serializer_class = OrdersSerializer
     pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
 
+    @swagger_auto_schema(responses={200: OrdersSerializer(many=True)})
     def get(self, request):
         orders = Order.objects.filter(user=self.request.user).order_by('-updated_at').prefetch_related(
             'ordered_items').annotate(
@@ -302,5 +326,5 @@ class GetOrderDetail(RetrieveAPIView):
 
     permission_classes = [IsAuthenticated, IsOwner]
     queryset = Order.objects.prefetch_related('ordered_items').annotate(
-            total_price=Sum(F('ordered_items__quantity') * F('ordered_items__product__price')))
+        total_price=Sum(F('ordered_items__quantity') * F('ordered_items__product__price')))
     serializer_class = OrderDetailsSerializer

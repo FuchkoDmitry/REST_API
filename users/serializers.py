@@ -120,7 +120,6 @@ class ResetPasswordConfirmSerializer(serializers.Serializer): # noqa
 
 class UserProfileViewSerializer(serializers.ModelSerializer):
     contacts = UserContactsViewSerializer(required=False, read_only=True, many=True)
-    # password = serializers.CharField(max_length=128, write_only=True, required=False)
 
     class Meta:
         model = User
