@@ -181,7 +181,7 @@ SOCIAL_AUTH_VK_OAUTH2_KEY = config('VK_APP_ID')
 SOCIAL_AUTH_VK_OAUTH2_SECRET = config('VK_APP_SECRET')
 
 SOCIAL_AUTH_VK_OAUTH2_EXTRA_DATA = ['email']
-SOCIAL_AUTH_USER_FIELDS = ['username', 'email', 'first_name', 'last_name', 'backend']
+SOCIAL_AUTH_USER_FIELDS = ['username', 'email', 'first_name', 'last_name']
 
 SOCIAL_AUTH_MAILRU_KEY = config('MAIL_RU_APP_ID')
 SOCIAL_AUTH_MAILRU_SECRET = config('MAIL_RU_APP_SECRET')

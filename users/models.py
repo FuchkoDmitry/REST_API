@@ -31,14 +31,14 @@ class UserManager(BaseUserManager):
         Поменять почту через лк (PATCH http://localhost/api/v1/user/profile/).
         Поменять пароль (POST http://localhost/api/v1/user/reset-password/)
         """
-        if email and not password:
+        if not password:
+            if not email:
+                email = f'{extra_fields["username"]}@mail.ru'
             user = User.objects.filter(email=email).first()
             if user:
                 return user
             password = self.make_random_password()
-        elif not email:
-            email = f'{extra_fields["username"]}@mail.ru'
-            password = self.make_random_password()
+
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
 

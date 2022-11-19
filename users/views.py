@@ -12,7 +12,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.exceptions import MethodNotAllowed
 from drf_yasg.utils import swagger_auto_schema
 from users.models import User, ConfirmEmailToken, UserInfo
-from users.permissions import IsOwner
+from users.permissions import IsOwner, NotSocial
 from users.serializers import (
     UserRegisterSerializer, UserLoginSerializer,
     ResetPasswordConfirmSerializer, UserProfileViewSerializer,
@@ -107,9 +107,10 @@ class LoginView(APIView):
 
 
 class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, NotSocial]
 
-    @swagger_auto_schema(responses={200: "Вы успешно вышли из системы"})
+    @swagger_auto_schema(responses={200: "Вы успешно вышли из системы"},
+                         operation_description='Недоступно для авторизованных через соц сети')
     def post(self, request):
         user = request.user
         user_token = Token.objects.get(user=user)
@@ -199,7 +200,7 @@ class UserProfileView(APIView):
         return Response(serializer.data)
 
     @swagger_auto_schema(operation_description='Изменить данные профиля пользователя',
-                         request_body=UserProfileViewSerializer)
+                         request_body=UserProfileViewSerializer(partial=True))
     def patch(self, request):
         serializer = self.serializer_class(instance=request.user, data=request.data, partial=True)
         if serializer.is_valid():
